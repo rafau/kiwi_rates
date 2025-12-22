@@ -133,6 +133,33 @@ uv run python -m src.html_generator
 open docs/index.html
 ```
 
+### Git Pre-Push Hook (Optional)
+
+To automatically run tests before every push, set up the pre-push hook:
+
+```bash
+# Copy the hook
+cp .git/hooks/pre-push.sample .git/hooks/pre-push
+
+# Or create it manually:
+cat > .git/hooks/pre-push << 'EOF'
+#!/bin/bash
+echo "Running tests before push..."
+uv run pytest
+if [ $? -ne 0 ]; then
+    echo "❌ Tests failed! Push aborted."
+    exit 1
+fi
+echo "✅ All tests passed! Proceeding with push."
+exit 0
+EOF
+
+# Make it executable
+chmod +x .git/hooks/pre-push
+```
+
+**Note:** Git hooks are not tracked in the repository. Each developer needs to set this up locally.
+
 ## GitHub Setup
 
 ### Enable GitHub Pages

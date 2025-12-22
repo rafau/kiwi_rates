@@ -268,6 +268,7 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
 - **Static test files**: Use captured XML/HTML responses for testing
 - **Validation automation**: Optional tool to verify static test files match current live endpoints
 - **Test framework**: pytest (de facto standard)
+- **Pre-push hook**: Optional git hook runs all tests before allowing push to prevent broken code
 
 ### HTML Visualization
 - **Keep simple**: Show only latest rates per product/term
