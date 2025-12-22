@@ -1,0 +1,42 @@
+name: Scrape Bank Rates
+
+on:
+  schedule:
+    # Run daily at 10:00 UTC (11 PM NZDT, 10 PM NZST)
+    - cron: '0 10 * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.13
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run BNZ scraper
+        run: uv run python -m src.scraper
+
+      - name: Generate HTML
+        run: uv run python -m src.html_generator
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add data/*.json docs/index.html
+          git diff --staged --quiet || git commit -m "Update rates - $(date -u +%Y-%m-%d)"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

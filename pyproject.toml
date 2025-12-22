@@ -1,0 +1,10 @@
+[project]
+name = "kiwi-rates"
+version = "0.1.0"
+description = "Automated scraper for NZ bank home loan rates"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pytest>=9.0.2",
+    "requests>=2.32.5",
+]
