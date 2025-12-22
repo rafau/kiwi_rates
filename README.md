@@ -139,10 +139,12 @@ open docs/index.html
 
 1. Go to repository Settings → Pages
 2. Source: Deploy from a branch
-3. Branch: `main`, Folder: `/docs`
+3. Branch: `master`, Folder: `/docs`
 4. Save
 
 Your rates will be available at: `https://<username>.github.io/<repo-name>/`
+
+**Note:** GitHub Pages may need to be manually enabled in repository settings if not already active.
 
 ### Manual Trigger
 

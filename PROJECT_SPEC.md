@@ -286,8 +286,8 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
 - [x] HTML generator (reads all bank files, generates static HTML)
 - [x] Testing and validation (23 tests, all passing)
 - [x] Code organization (bank-specific modules for easy extension)
-- [ ] Initial deployment (git init, enable GitHub Pages)
-- [ ] First production run
+- [x] Initial deployment (git repository initialized and pushed to GitHub)
+- [x] First production run (successfully scraped BNZ rates on 2025-12-22)
 
 ## Notes
 - User is experienced senior software engineer
