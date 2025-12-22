@@ -1,8 +1,7 @@
 # Claude Instructions for Kiwi Rates Project
 
-**CRITICAL - FIRST ACTION:** Before responding to any user request, you MUST read PROJECT_SPEC.md using the Read tool. This is non-negotiable.
 
-  Always read `PROJECT_SPEC.md` when starting work on this project to understand:
+**CRITICAL - FIRST ACTION:** Before responding to any user request, you MUST read `PROJECT_SPEC.md` and `README.md` using the Read tool. This is non-negotiable.
   - Current architecture and design decisions
   - Implementation status
   - Bank module pattern
