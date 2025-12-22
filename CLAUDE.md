@@ -1,18 +1,16 @@
 # Claude Instructions for Kiwi Rates Project
 
-## Startup
+**CRITICAL - FIRST ACTION:** Before responding to any user request, you MUST read PROJECT_SPEC.md using the Read tool. This is non-negotiable.
 
-Always read `PROJECT_SPEC.md` when starting work on this project to understand:
-- Current architecture and design decisions
-- Implementation status
-- Bank module pattern
-- Data models and storage strategy
+  Always read `PROJECT_SPEC.md` when starting work on this project to understand:
+  - Current architecture and design decisions
+  - Implementation status
+  - Bank module pattern
+  - Data models and storage strategy
 
 ## Documentation Maintenance
 
-**IMPORTANT:** Keep documentation in sync with code changes.
-
-When making code changes, always update:
+**CRITIAL** When making code changes, YOU MUST do this is:
 
 1. **PROJECT_SPEC.md** - Update relevant sections:
    - Repository Structure (if files added/moved/removed)
