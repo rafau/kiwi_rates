@@ -95,7 +95,7 @@ Automated daily scraping of NZ bank home loan rates with minimal future maintena
 - `rate_percentage`: Interest rate as decimal
 
 ### Storage Strategy
-- **Stateful updates**: Only append new entries to `rates` array when values actually change
+- **Stateful updates**: Only append new entries to `rates` array when values actually change (implemented via `filter_changed_rates()` function)
 - **Always update**: `last_scraped` updated on every run (proves scraper is working)
 - **Comparison logic**: For each product/term combination, compare new rate against last entry; only store if different
 - **Bank name**: Identified by filename (`bnz_rates.json`, `anz_rates.json`, etc.), not stored in data
@@ -285,10 +285,11 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
 - [x] Core scraper implementation (BNZ module with extractor, parser, scraper)
 - [x] GitHub Actions workflow (configured for daily runs)
 - [x] HTML generator (reads all bank files, generates static HTML)
-- [x] Testing and validation (23 tests, all passing)
+- [x] Testing and validation (31 tests, all passing)
 - [x] Code organization (bank-specific modules for easy extension)
 - [x] Initial deployment (git repository initialized and pushed to GitHub)
 - [x] First production run (successfully scraped BNZ rates on 2025-12-22)
+- [x] Stateful updates bug fix (2026-02-04): Fixed duplicate rates issue - now only stores rates that actually changed via `filter_changed_rates()` function
 
 ## Notes
 - User is experienced senior software engineer

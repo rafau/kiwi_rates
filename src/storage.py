@@ -71,3 +71,34 @@ def should_update_rates(existing_rates: list[dict], new_rates: list[dict]) -> bo
 
     # Check if rates are different
     return latest_existing != new_rates_map
+
+
+def filter_changed_rates(existing_rates: list[dict], new_rates: list[dict]) -> list[dict]:
+    """
+    Filter new rates to only include those that have changed.
+
+    Returns only rates that:
+    - Are new products/terms (not in existing data)
+    - Have different rate_percentage values from latest existing entry
+
+    Args:
+        existing_rates: List of existing rate entries (with scraped_at timestamps)
+        new_rates: List of new rate entries (without scraped_at timestamps)
+
+    Returns:
+        List of rates that have changed (preserves order from new_rates)
+    """
+    # Build map of latest existing rates
+    latest_existing = {}
+    for rate in existing_rates:
+        key = (rate["product_name"], rate["term"])
+        latest_existing[key] = rate["rate_percentage"]
+
+    # Filter to only changed rates
+    changed_rates = []
+    for rate in new_rates:
+        key = (rate["product_name"], rate["term"])
+        if key not in latest_existing or latest_existing[key] != rate["rate_percentage"]:
+            changed_rates.append(rate)
+
+    return changed_rates

@@ -9,7 +9,7 @@ Automated daily scraping of New Zealand bank home loan rates with minimal mainte
 - **Zero maintenance** - auto-extracts API keys from bank websites
 - **Free hosting** - GitHub Pages serves static HTML visualization
 - **Extensible** - designed to easily add more banks
-- **Comprehensive tests** - 23 unit tests with TDD approach
+- **Comprehensive tests** - 31 unit tests with TDD approach
 
 ## Current Banks
 
@@ -203,7 +203,7 @@ You can manually trigger the scraper from the Actions tab:
 - **No API key storage** - Always extracts fresh key from website
 - **No browser automation** - Simple HTTP requests (fast, reliable)
 - **Stateful updates** - Only stores changes (clean data, less git noise)
-- **Comprehensive tests** - 23 tests ensure reliability
+- **Comprehensive tests** - 31 tests ensure reliability
 
 ## Adding More Banks
 

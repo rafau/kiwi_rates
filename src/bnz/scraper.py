@@ -8,7 +8,7 @@ import requests
 
 from src.bnz.extractor import extract_api_key
 from src.bnz.parser import parse_last_updated, parse_rates
-from src.storage import load_rates, save_rates, should_update_rates
+from src.storage import load_rates, save_rates, should_update_rates, filter_changed_rates
 
 
 def fetch_with_retry(url: str, headers: dict | None = None, max_retries: int = 5, backoff: float = 2.0, timeout: int = 60) -> requests.Response:
@@ -104,12 +104,15 @@ def scrape_bnz_rates(data_file: Path) -> dict:
     rates_changed = should_update_rates(existing_data["rates"], new_rates)
 
     if rates_changed:
-        # Add scraped_at timestamp to new rates
-        for rate in new_rates:
+        # Filter to only rates that actually changed
+        changed_rates = filter_changed_rates(existing_data["rates"], new_rates)
+
+        # Add scraped_at timestamp to changed rates only
+        for rate in changed_rates:
             rate["scraped_at"] = now_iso
 
-        # Append new rates to existing
-        updated_rates = existing_data["rates"] + new_rates
+        # Append only changed rates to existing
+        updated_rates = existing_data["rates"] + changed_rates
     else:
         # Keep existing rates
         updated_rates = existing_data["rates"]
