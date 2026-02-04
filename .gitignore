@@ -8,3 +8,9 @@ wheels/
 
 # Virtual environments
 .venv
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/.gitignore
+/.idea/kiwi_rates.iml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/vcs.xml
