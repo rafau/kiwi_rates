@@ -589,3 +589,321 @@ def test_generate_html_excludes_recent_change_for_old(tmp_path):
     # Note: We need to check that the row with old change doesn't have the class
     # Since we only have one rate entry, and it's old, there should be no recent-change class
     assert html_content.count('class="recent-change"') == 0
+
+
+def test_extract_latest_rates_new_product_within_30_days(tmp_path):
+    """Test that products first appearing within 30 days are marked as new."""
+    from datetime import datetime, timedelta, timezone
+
+    # Create a product that first appeared 15 days ago
+    now = datetime.now(timezone.utc)
+    fifteen_days_ago = now - timedelta(days=15)
+
+    data = {
+        "last_scraped": now.isoformat(),
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": fifteen_days_ago.isoformat(),
+                "product_name": "NewProduct",
+                "term": "1 year",
+                "rate_percentage": 4.49
+            }
+        ]
+    }
+
+    file_path = tmp_path / "test_rates.json"
+    file_path.write_text(json.dumps(data))
+
+    latest = extract_latest_rates(file_path)
+
+    assert len(latest) == 1
+    rate = latest[0]
+    assert rate["product_name"] == "NewProduct"
+    assert "is_new_product" in rate
+    assert rate["is_new_product"] is True
+    assert "days_since_first_appearance" in rate
+    assert rate["days_since_first_appearance"] == 15
+
+
+def test_extract_latest_rates_old_product_over_30_days(tmp_path):
+    """Test that products first appearing over 30 days ago are NOT marked as new."""
+    from datetime import datetime, timedelta, timezone
+
+    # Create a product that first appeared 48 days ago
+    now = datetime.now(timezone.utc)
+    forty_eight_days_ago = now - timedelta(days=48)
+
+    data = {
+        "last_scraped": now.isoformat(),
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": forty_eight_days_ago.isoformat(),
+                "product_name": "OldProduct",
+                "term": "1 year",
+                "rate_percentage": 4.49
+            }
+        ]
+    }
+
+    file_path = tmp_path / "test_rates.json"
+    file_path.write_text(json.dumps(data))
+
+    latest = extract_latest_rates(file_path)
+
+    assert len(latest) == 1
+    rate = latest[0]
+    assert rate["product_name"] == "OldProduct"
+    assert "is_new_product" in rate
+    assert rate["is_new_product"] is False
+    assert "days_since_first_appearance" in rate
+    assert rate["days_since_first_appearance"] == 48
+
+
+def test_extract_latest_rates_exactly_30_days(tmp_path):
+    """Test boundary condition: product exactly 30 days old is NOT marked as new."""
+    from datetime import datetime, timedelta, timezone
+
+    # Create a product that first appeared exactly 30 days ago
+    now = datetime.now(timezone.utc)
+    thirty_days_ago = now - timedelta(days=30)
+
+    data = {
+        "last_scraped": now.isoformat(),
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": thirty_days_ago.isoformat(),
+                "product_name": "BoundaryProduct",
+                "term": "1 year",
+                "rate_percentage": 4.49
+            }
+        ]
+    }
+
+    file_path = tmp_path / "test_rates.json"
+    file_path.write_text(json.dumps(data))
+
+    latest = extract_latest_rates(file_path)
+
+    assert len(latest) == 1
+    rate = latest[0]
+    assert rate["product_name"] == "BoundaryProduct"
+    assert "is_new_product" in rate
+    assert rate["is_new_product"] is False
+    assert "days_since_first_appearance" in rate
+    assert rate["days_since_first_appearance"] == 30
+
+
+def test_extract_latest_rates_new_product_with_rate_changes(tmp_path):
+    """Test that new product with multiple rate changes uses earliest scraped_at date."""
+    from datetime import datetime, timedelta, timezone
+
+    # Create a product that first appeared 20 days ago, with rate changes
+    now = datetime.now(timezone.utc)
+    twenty_days_ago = now - timedelta(days=20)
+    ten_days_ago = now - timedelta(days=10)
+
+    data = {
+        "last_scraped": now.isoformat(),
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": twenty_days_ago.isoformat(),
+                "product_name": "NewChangingProduct",
+                "term": "2 years",
+                "rate_percentage": 5.00
+            },
+            {
+                "scraped_at": ten_days_ago.isoformat(),
+                "product_name": "NewChangingProduct",
+                "term": "2 years",
+                "rate_percentage": 5.15
+            }
+        ]
+    }
+
+    file_path = tmp_path / "test_rates.json"
+    file_path.write_text(json.dumps(data))
+
+    latest = extract_latest_rates(file_path)
+
+    assert len(latest) == 1
+    rate = latest[0]
+    assert rate["product_name"] == "NewChangingProduct"
+    assert rate["rate_percentage"] == 5.15  # Latest rate
+    assert "is_new_product" in rate
+    assert rate["is_new_product"] is True  # Based on earliest date (20 days)
+    assert "days_since_first_appearance" in rate
+    assert rate["days_since_first_appearance"] == 20
+
+
+def test_extract_latest_rates_new_and_recent_change(tmp_path):
+    """Test that product can be both new AND have recent rate change."""
+    from datetime import datetime, timedelta, timezone
+
+    # Create a new product (first appeared 25 days ago) with recent rate change (5 days ago)
+    now = datetime.now(timezone.utc)
+    twenty_five_days_ago = now - timedelta(days=25)
+    five_days_ago = now - timedelta(days=5)
+
+    data = {
+        "last_scraped": now.isoformat(),
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": twenty_five_days_ago.isoformat(),
+                "product_name": "NewRecentProduct",
+                "term": "1 year",
+                "rate_percentage": 4.50
+            },
+            {
+                "scraped_at": five_days_ago.isoformat(),
+                "product_name": "NewRecentProduct",
+                "term": "1 year",
+                "rate_percentage": 4.75
+            }
+        ]
+    }
+
+    file_path = tmp_path / "test_rates.json"
+    file_path.write_text(json.dumps(data))
+
+    latest = extract_latest_rates(file_path)
+
+    assert len(latest) == 1
+    rate = latest[0]
+    assert rate["product_name"] == "NewRecentProduct"
+    assert "is_new_product" in rate
+    assert rate["is_new_product"] is True
+    assert "is_recent_change" in rate
+    assert rate["is_recent_change"] is True
+    assert rate["rate_change"] == 0.25
+
+
+def test_generate_html_includes_new_product_badge(tmp_path):
+    """Test that HTML includes NEW badge and CSS for new products."""
+    from datetime import datetime, timedelta, timezone
+
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+
+    # Create data with new product (15 days ago)
+    now = datetime.now(timezone.utc)
+    fifteen_days_ago = now - timedelta(days=15)
+
+    bnz_data = {
+        "last_scraped": now.isoformat(),
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": fifteen_days_ago.isoformat(),
+                "product_name": "NewProduct",
+                "term": "1 year",
+                "rate_percentage": 4.49
+            }
+        ]
+    }
+
+    (data_dir / "bnz_rates.json").write_text(json.dumps(bnz_data))
+
+    output_file = tmp_path / "index.html"
+    generate_html(data_dir, output_file)
+
+    html_content = output_file.read_text()
+
+    # Verify NEW badge is present
+    assert "new-product-badge" in html_content
+    assert ">New</span>" in html_content
+
+    # Verify CSS class is defined
+    assert ".new-product-badge" in html_content
+
+
+def test_generate_html_excludes_new_badge_for_old_products(tmp_path):
+    """Test that HTML excludes NEW badge for products over 30 days old."""
+    from datetime import datetime, timedelta, timezone
+
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+
+    # Create data with old product (48 days ago)
+    now = datetime.now(timezone.utc)
+    forty_eight_days_ago = now - timedelta(days=48)
+
+    bnz_data = {
+        "last_scraped": now.isoformat(),
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": forty_eight_days_ago.isoformat(),
+                "product_name": "OldProduct",
+                "term": "1 year",
+                "rate_percentage": 4.49
+            }
+        ]
+    }
+
+    (data_dir / "bnz_rates.json").write_text(json.dumps(bnz_data))
+
+    output_file = tmp_path / "index.html"
+    generate_html(data_dir, output_file)
+
+    html_content = output_file.read_text()
+
+    # Verify NEW badge is NOT present (CSS class should exist but not be used)
+    # Check that the product name doesn't have the badge
+    assert "OldProduct" in html_content
+    # The new-product-badge CSS class should be defined
+    assert ".new-product-badge" in html_content
+    # But it should not be used in this table (no actual badge instances)
+    assert html_content.count("new-product-badge") == 1  # Only in CSS definition
+
+
+def test_generate_html_new_product_with_recent_change_styling(tmp_path):
+    """Test that both yellow background AND NEW badge render correctly together."""
+    from datetime import datetime, timedelta, timezone
+
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+
+    # Create new product (25 days ago) with recent rate change (5 days ago)
+    now = datetime.now(timezone.utc)
+    twenty_five_days_ago = now - timedelta(days=25)
+    five_days_ago = now - timedelta(days=5)
+
+    bnz_data = {
+        "last_scraped": now.isoformat(),
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": twenty_five_days_ago.isoformat(),
+                "product_name": "NewRecentProduct",
+                "term": "1 year",
+                "rate_percentage": 4.50
+            },
+            {
+                "scraped_at": five_days_ago.isoformat(),
+                "product_name": "NewRecentProduct",
+                "term": "1 year",
+                "rate_percentage": 4.75
+            }
+        ]
+    }
+
+    (data_dir / "bnz_rates.json").write_text(json.dumps(bnz_data))
+
+    output_file = tmp_path / "index.html"
+    generate_html(data_dir, output_file)
+
+    html_content = output_file.read_text()
+
+    # Verify both features are present
+    assert "new-product-badge" in html_content
+    assert ">New</span>" in html_content
+    assert 'class="recent-change"' in html_content
+
+    # Verify the row has recent-change class
+    # And the product name has NEW badge
+    assert "NewRecentProduct" in html_content

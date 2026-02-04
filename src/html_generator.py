@@ -38,6 +38,16 @@ def extract_latest_rates(data_file: Path) -> list[dict]:
         # Sort by scraped_at to ensure chronological order
         sorted_rates = sorted(rate_list, key=lambda r: r["scraped_at"])
 
+        # Find when this product first appeared
+        min_scraped_date = min(datetime.fromisoformat(r["scraped_at"]) for r in sorted_rates)
+
+        # Calculate days since first appearance
+        now = datetime.now(min_scraped_date.tzinfo)  # Use same timezone
+        days_since_first_appearance = (now - min_scraped_date).days
+
+        # Mark as new if first appeared within 30 days (boundary: 30 days = NOT new)
+        is_new_product = days_since_first_appearance < 30
+
         # Get latest rate
         latest = sorted_rates[-1]
 
@@ -61,6 +71,8 @@ def extract_latest_rates(data_file: Path) -> list[dict]:
         enriched_rate = latest.copy()
         enriched_rate["rate_change"] = rate_change
         enriched_rate["is_recent_change"] = is_recent_change
+        enriched_rate["is_new_product"] = is_new_product
+        enriched_rate["days_since_first_appearance"] = days_since_first_appearance
         result.append(enriched_rate)
 
     return result
@@ -192,6 +204,18 @@ def generate_html_content(bank_rates: dict[str, list[dict]]) -> str:
         .recent-change:hover {{
             background-color: #ffe69c;
         }}
+        .new-product-badge {{
+            display: inline-block;
+            background-color: #bee3f8;  /* Light blue */
+            color: #2c5282;             /* Dark blue (matches existing theme) */
+            font-size: 0.75em;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }}
     </style>
 </head>
 <body>
@@ -241,8 +265,13 @@ def generate_html_content(bank_rates: dict[str, list[dict]]) -> str:
                 # Add recent-change class if applicable
                 row_class = ' class="recent-change"' if rate.get("is_recent_change", False) else ""
 
+                # Build product name with NEW badge if applicable
+                product_display = rate['product_name']
+                if rate.get('is_new_product', False):
+                    product_display += ' <span class="new-product-badge">New</span>'
+
                 html += f"""                <tr{row_class}>
-                    <td>{rate['product_name']}</td>
+                    <td>{product_display}</td>
                     <td>{rate['term']}</td>
                     <td class="rate">{rate['rate_percentage']:.2f}% <span class="{change_class}">({sign}{abs(rate_change):.2f})</span></td>
                     <td>{scraped_date}</td>

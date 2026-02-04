@@ -280,6 +280,10 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
 - **Recent changes**: Rows with rate changes in last 14 days highlighted with yellow background
   - Visual distinction helps quickly identify recent market movements
   - Only applies to rates that actually changed (not zero-change entries)
+- **New product indicator**: Products first appearing within last 30 days show blue "NEW" badge
+  - Helps users quickly identify newly introduced loan products
+  - Badge automatically disappears after 30 days
+  - Can appear alongside recent change highlighting (yellow background + NEW badge)
 - **No charts**: Simple is sufficient for now
 - **Data source**: Read all `data/*_rates.json` files, extract latest rate per product/term combo
 
@@ -299,6 +303,7 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
 - [x] Stateful updates bug fix (2026-02-04): Fixed duplicate rates issue - now only stores rates that actually changed via `filter_changed_rates()` function
 - [x] Rate change display (2026-02-04): HTML visualization now shows rate changes since previous scrape with color-coded indicators (red=increase, green=decrease, gray=neutral)
 - [x] Recent change highlighting (2026-02-04): Rows with rate changes in last 14 days now highlighted with yellow background for quick identification of recent market movements
+- [x] New product indicator (2026-02-04): Products first appearing within 30 days show blue NEW badge for easy identification
 
 ## Notes
 - User is experienced senior software engineer
