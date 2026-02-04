@@ -1,6 +1,6 @@
 """Generate HTML visualization from rate data."""
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 
@@ -48,9 +48,19 @@ def extract_latest_rates(data_file: Path) -> list[dict]:
         else:
             rate_change = 0.00
 
-        # Add rate_change field to latest entry
+        # Determine if this is a recent change (within last 2 weeks)
+        is_recent_change = False
+        if rate_change != 0.00:
+            # Parse scraped_at timestamp
+            scraped_date = datetime.fromisoformat(latest["scraped_at"])
+            now = datetime.now(scraped_date.tzinfo)  # Use same timezone
+            days_since_change = (now - scraped_date).days
+            is_recent_change = days_since_change <= 14
+
+        # Add rate_change and is_recent_change fields to latest entry
         enriched_rate = latest.copy()
         enriched_rate["rate_change"] = rate_change
+        enriched_rate["is_recent_change"] = is_recent_change
         result.append(enriched_rate)
 
     return result
@@ -175,6 +185,13 @@ def generate_html_content(bank_rates: dict[str, list[dict]]) -> str:
             font-size: 0.9em;
             margin-left: 4px;
         }}
+        .recent-change {{
+            background-color: #fff3cd;
+            font-weight: 500;
+        }}
+        .recent-change:hover {{
+            background-color: #ffe69c;
+        }}
     </style>
 </head>
 <body>
@@ -221,7 +238,10 @@ def generate_html_content(bank_rates: dict[str, list[dict]]) -> str:
                     change_class = "rate-change-neutral"
                     sign = ""
 
-                html += f"""                <tr>
+                # Add recent-change class if applicable
+                row_class = ' class="recent-change"' if rate.get("is_recent_change", False) else ""
+
+                html += f"""                <tr{row_class}>
                     <td>{rate['product_name']}</td>
                     <td>{rate['term']}</td>
                     <td class="rate">{rate['rate_percentage']:.2f}% <span class="{change_class}">({sign}{abs(rate_change):.2f})</span></td>

@@ -6,11 +6,11 @@ Automated daily scraping of New Zealand bank home loan rates with minimal mainte
 
 - **Automated daily scraping** via GitHub Actions
 - **Stateful updates** - only stores rate changes, not duplicates
-- **Rate change tracking** - visualizes how rates changed since previous scrape with color-coded indicators
+- **Rate change tracking** - visualizes how rates changed since previous scrape with color-coded indicators and highlights recent changes (last 14 days) with yellow background
 - **Zero maintenance** - auto-extracts API keys from bank websites
 - **Free hosting** - GitHub Pages serves static HTML visualization
 - **Extensible** - designed to easily add more banks
-- **Comprehensive tests** - 37 unit tests with TDD approach
+- **Comprehensive tests** - 42 unit tests with TDD approach
 
 ## Current Banks
 
@@ -194,6 +194,7 @@ You can manually trigger the scraper from the Actions tab:
 7. **Generate HTML** (`src/html_generator.py`) - Create visualization with rate change indicators
    - Compares each product/term to previous scrape
    - Displays: `5.55% (+0.26)` for increases (red), `4.49% (-0.20)` for decreases (green), `4.49% (0.00)` for no change (gray)
+   - Highlights rows with changes in last 14 days (yellow background) for quick identification of recent market movements
 8. **Commit & Push** (GitHub Actions) - Update repository
 
 ### Retry Logic
@@ -206,7 +207,7 @@ You can manually trigger the scraper from the Actions tab:
 - **No API key storage** - Always extracts fresh key from website
 - **No browser automation** - Simple HTTP requests (fast, reliable)
 - **Stateful updates** - Only stores changes (clean data, less git noise)
-- **Comprehensive tests** - 31 tests ensure reliability
+- **Comprehensive tests** - 42 tests ensure reliability
 
 ## Adding More Banks
 

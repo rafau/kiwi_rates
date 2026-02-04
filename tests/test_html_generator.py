@@ -384,3 +384,208 @@ def test_generate_html_includes_rate_changes(tmp_path):
     assert ".rate-change-positive" in html_content
     assert ".rate-change-negative" in html_content
     assert ".rate-change-neutral" in html_content
+
+
+def test_extract_latest_rates_with_recent_change(tmp_path):
+    """Test that recent rate changes (< 14 days) are marked as recent."""
+    from datetime import datetime, timedelta, timezone
+
+    # Create a date 7 days ago (recent change)
+    now = datetime.now(timezone.utc)
+    seven_days_ago = now - timedelta(days=7)
+    fourteen_days_ago = now - timedelta(days=14)
+
+    data = {
+        "last_scraped": now.isoformat(),
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": fourteen_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.49
+            },
+            {
+                "scraped_at": seven_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.75
+            }
+        ]
+    }
+
+    file_path = tmp_path / "test_rates.json"
+    file_path.write_text(json.dumps(data))
+
+    latest = extract_latest_rates(file_path)
+
+    assert len(latest) == 1
+    rate = latest[0]
+    assert rate["rate_percentage"] == 4.75
+    assert rate["rate_change"] == 0.26  # 4.75 - 4.49
+    assert "is_recent_change" in rate
+    assert rate["is_recent_change"] is True
+
+
+def test_extract_latest_rates_with_old_change(tmp_path):
+    """Test that old rate changes (> 14 days) are not marked as recent."""
+    from datetime import datetime, timedelta, timezone
+
+    # Create a date 20 days ago (old change)
+    now = datetime.now(timezone.utc)
+    twenty_days_ago = now - timedelta(days=20)
+    thirty_days_ago = now - timedelta(days=30)
+
+    data = {
+        "last_scraped": now.isoformat(),
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": thirty_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.49
+            },
+            {
+                "scraped_at": twenty_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.69
+            }
+        ]
+    }
+
+    file_path = tmp_path / "test_rates.json"
+    file_path.write_text(json.dumps(data))
+
+    latest = extract_latest_rates(file_path)
+
+    assert len(latest) == 1
+    rate = latest[0]
+    assert rate["rate_percentage"] == 4.69
+    assert rate["rate_change"] == 0.20  # 4.69 - 4.49
+    assert "is_recent_change" in rate
+    assert rate["is_recent_change"] is False
+
+
+def test_extract_latest_rates_no_change_not_recent(tmp_path):
+    """Test that entries with no rate change are not marked as recent."""
+    from datetime import datetime, timedelta, timezone
+
+    # Create a date 5 days ago (recent, but no change)
+    now = datetime.now(timezone.utc)
+    five_days_ago = now - timedelta(days=5)
+
+    data = {
+        "last_scraped": now.isoformat(),
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": five_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.49
+            }
+        ]
+    }
+
+    file_path = tmp_path / "test_rates.json"
+    file_path.write_text(json.dumps(data))
+
+    latest = extract_latest_rates(file_path)
+
+    assert len(latest) == 1
+    rate = latest[0]
+    assert rate["rate_percentage"] == 4.49
+    assert rate["rate_change"] == 0.00  # Only one entry
+    assert "is_recent_change" in rate
+    assert rate["is_recent_change"] is False
+
+
+def test_generate_html_includes_recent_change_class(tmp_path):
+    """Test that HTML includes recent-change class for recent rate changes."""
+    from datetime import datetime, timedelta, timezone
+
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+
+    # Create data with recent change (7 days ago)
+    now = datetime.now(timezone.utc)
+    seven_days_ago = now - timedelta(days=7)
+    fourteen_days_ago = now - timedelta(days=14)
+
+    bnz_data = {
+        "last_scraped": now.isoformat(),
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": fourteen_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.49
+            },
+            {
+                "scraped_at": seven_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.75
+            }
+        ]
+    }
+
+    (data_dir / "bnz_rates.json").write_text(json.dumps(bnz_data))
+
+    output_file = tmp_path / "index.html"
+    generate_html(data_dir, output_file)
+
+    html_content = output_file.read_text()
+
+    # Verify recent-change class is present
+    assert 'class="recent-change"' in html_content
+
+    # Verify CSS class is defined
+    assert ".recent-change" in html_content
+
+
+def test_generate_html_excludes_recent_change_for_old(tmp_path):
+    """Test that HTML excludes recent-change class for old rate changes."""
+    from datetime import datetime, timedelta, timezone
+
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+
+    # Create data with old change (20 days ago)
+    now = datetime.now(timezone.utc)
+    twenty_days_ago = now - timedelta(days=20)
+    thirty_days_ago = now - timedelta(days=30)
+
+    bnz_data = {
+        "last_scraped": now.isoformat(),
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": thirty_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.49
+            },
+            {
+                "scraped_at": twenty_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.69
+            }
+        ]
+    }
+
+    (data_dir / "bnz_rates.json").write_text(json.dumps(bnz_data))
+
+    output_file = tmp_path / "index.html"
+    generate_html(data_dir, output_file)
+
+    html_content = output_file.read_text()
+
+    # Verify recent-change class is NOT present for this old change
+    # Note: We need to check that the row with old change doesn't have the class
+    # Since we only have one rate entry, and it's old, there should be no recent-change class
+    assert html_content.count('class="recent-change"') == 0

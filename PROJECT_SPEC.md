@@ -277,6 +277,9 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
   - Format: `5.55% (+0.26)` or `4.49% (-0.20)` or `4.49% (0.00)` for first appearance
   - Color coding: Red for increases (bad for borrowers), green for decreases (good), gray for no change
   - Comparison: Always compares the two most recent entries per product/term
+- **Recent changes**: Rows with rate changes in last 14 days highlighted with yellow background
+  - Visual distinction helps quickly identify recent market movements
+  - Only applies to rates that actually changed (not zero-change entries)
 - **No charts**: Simple is sufficient for now
 - **Data source**: Read all `data/*_rates.json` files, extract latest rate per product/term combo
 
@@ -289,12 +292,13 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
 - [x] Core scraper implementation (BNZ module with extractor, parser, scraper)
 - [x] GitHub Actions workflow (configured for daily runs)
 - [x] HTML generator (reads all bank files, generates static HTML)
-- [x] Testing and validation (37 tests, all passing)
+- [x] Testing and validation (42 tests, all passing)
 - [x] Code organization (bank-specific modules for easy extension)
 - [x] Initial deployment (git repository initialized and pushed to GitHub)
 - [x] First production run (successfully scraped BNZ rates on 2025-12-22)
 - [x] Stateful updates bug fix (2026-02-04): Fixed duplicate rates issue - now only stores rates that actually changed via `filter_changed_rates()` function
 - [x] Rate change display (2026-02-04): HTML visualization now shows rate changes since previous scrape with color-coded indicators (red=increase, green=decrease, gray=neutral)
+- [x] Recent change highlighting (2026-02-04): Rows with rate changes in last 14 days now highlighted with yellow background for quick identification of recent market movements
 
 ## Notes
 - User is experienced senior software engineer
