@@ -75,51 +75,9 @@
       "scraped_at": "2025-12-22T16:49:13.816496+13:00"
     },
     {
-      "product_name": "TotalMoney",
-      "term": "Variable",
-      "rate_percentage": 5.94,
-      "scraped_at": "2026-02-03T23:52:48.503180+13:00"
-    },
-    {
-      "product_name": "BNZ Advantage",
-      "term": "Variable",
-      "rate_percentage": 5.84,
-      "scraped_at": "2026-02-03T23:52:48.503180+13:00"
-    },
-    {
-      "product_name": "Standard",
-      "term": "Variable",
-      "rate_percentage": 5.84,
-      "scraped_at": "2026-02-03T23:52:48.503180+13:00"
-    },
-    {
       "product_name": "Standard",
       "term": "6 months",
       "rate_percentage": 4.49,
-      "scraped_at": "2026-02-03T23:52:48.503180+13:00"
-    },
-    {
-      "product_name": "Standard",
-      "term": "1 year",
-      "rate_percentage": 4.49,
-      "scraped_at": "2026-02-03T23:52:48.503180+13:00"
-    },
-    {
-      "product_name": "Standard",
-      "term": "18 months",
-      "rate_percentage": 4.64,
-      "scraped_at": "2026-02-03T23:52:48.503180+13:00"
-    },
-    {
-      "product_name": "Standard",
-      "term": "2 years",
-      "rate_percentage": 4.69,
-      "scraped_at": "2026-02-03T23:52:48.503180+13:00"
-    },
-    {
-      "product_name": "Standard",
-      "term": "3 years",
-      "rate_percentage": 5.09,
       "scraped_at": "2026-02-03T23:52:48.503180+13:00"
     },
     {
@@ -132,18 +90,6 @@
       "product_name": "Standard",
       "term": "5 years",
       "rate_percentage": 5.69,
-      "scraped_at": "2026-02-03T23:52:48.503180+13:00"
-    },
-    {
-      "product_name": "Mortgage One",
-      "term": "Variable",
-      "rate_percentage": 5.94,
-      "scraped_at": "2026-02-03T23:52:48.503180+13:00"
-    },
-    {
-      "product_name": "Rapid Repay",
-      "term": "Variable",
-      "rate_percentage": 5.94,
       "scraped_at": "2026-02-03T23:52:48.503180+13:00"
     }
   ]
