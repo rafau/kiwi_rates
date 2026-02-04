@@ -273,6 +273,7 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
 ### HTML Visualization
 - **Keep simple**: Show only latest rates per product/term
 - **Format**: Basic HTML table with rate change indicators
+- **Mobile responsive**: Card-based layout below 768px breakpoint for optimal mobile viewing
 - **Rate changes**: Display how rates changed since previous scrape
   - Format: `5.55% (+0.26)` or `4.49% (-0.20)` or `4.49% (0.00)` for first appearance
   - Color coding: Red for increases (bad for borrowers), green for decreases (good), gray for no change

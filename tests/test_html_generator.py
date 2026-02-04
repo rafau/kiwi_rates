@@ -855,10 +855,10 @@ def test_generate_html_excludes_new_badge_for_old_products(tmp_path):
     # Verify NEW badge is NOT present (CSS class should exist but not be used)
     # Check that the product name doesn't have the badge
     assert "OldProduct" in html_content
-    # The new-product-badge CSS class should be defined
+    # The new-product-badge CSS class should be defined (in desktop + mobile CSS)
     assert ".new-product-badge" in html_content
     # But it should not be used in this table (no actual badge instances)
-    assert html_content.count("new-product-badge") == 1  # Only in CSS definition
+    assert html_content.count("new-product-badge") == 2  # Only in CSS definitions (desktop + mobile)
 
 
 def test_generate_html_new_product_with_recent_change_styling(tmp_path):

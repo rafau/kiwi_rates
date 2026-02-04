@@ -90,11 +90,144 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+            /* Reduce body padding on mobile */
+            body {
+                padding: 10px;
+            }
+
+            /* Adjust bank section spacing */
+            .bank-section {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+
+            /* Hide table header on mobile */
+            table thead {
+                display: none;
+            }
+
+            /* Convert table to block layout */
+            table, tbody, tr, td {
+                display: block;
+                width: 100%;
+            }
+
+            /* Style rows as cards */
+            tr {
+                margin-bottom: 15px;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                padding: 12px;
+                background-color: white;
+            }
+
+            /* Maintain recent-change highlighting */
+            tr.recent-change {
+                background-color: #fff3cd;
+                border-color: #ffc107;
+            }
+
+            tr.recent-change:hover {
+                background-color: #ffe69c;
+            }
+
+            /* Cell spacing */
+            td {
+                padding: 8px 0;
+                border-bottom: none;
+                text-align: left;
+            }
+
+            /* Product name styling (first cell) */
+            td:first-child {
+                font-size: 1.1em;
+                font-weight: 600;
+                color: #2c5282;
+                padding-bottom: 10px;
+                border-bottom: 1px solid #e2e8f0;
+                margin-bottom: 8px;
+            }
+
+            /* Add labels using CSS pseudo-elements */
+            td:nth-child(2)::before {
+                content: "Term: ";
+                font-weight: 600;
+                color: #4a5568;
+            }
+
+            td:nth-child(3)::before {
+                content: "Rate: ";
+                font-weight: 600;
+                color: #4a5568;
+            }
+
+            td:nth-child(4)::before {
+                content: "Last Updated: ";
+                font-weight: 600;
+                color: #4a5568;
+            }
+
+            /* Rate cell emphasis */
+            td:nth-child(3) {
+                font-size: 1.15em;
+            }
+
+            /* Last updated cell styling */
+            td:nth-child(4) {
+                color: #718096;
+                font-size: 0.9em;
+            }
+
+            /* Remove desktop hover effect */
+            tr:hover {
+                background-color: inherit;
+            }
+
+            /* Adjust rate change indicator size */
+            .rate-change-positive,
+            .rate-change-negative,
+            .rate-change-neutral {
+                font-size: 0.85em;
+            }
+
+            /* Adjust NEW badge size */
+            .new-product-badge {
+                font-size: 0.7em;
+            }
+
+            /* Responsive typography */
+            h1 {
+                font-size: 1.5em;
+            }
+
+            h2 {
+                font-size: 1.3em;
+            }
+
+            .last-updated {
+                font-size: 0.9em;
+            }
+        }
+
+        /* Optional: Tablet optimization */
+        @media (max-width: 1024px) and (min-width: 769px) {
+            body {
+                padding: 15px;
+            }
+
+            th, td {
+                padding: 10px;
+                font-size: 0.95em;
+            }
+        }
     </style>
 </head>
 <body>
     <h1>Kiwi Rates</h1>
-    <p class="last-updated">Last updated: 2026-02-04 19:06:01</p>
+    <p class="last-updated">Last updated: 2026-02-04 19:17:46</p>
 
     <div class="bank-section">
         <h2>BNZ</h2>

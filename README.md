@@ -8,6 +8,7 @@ Automated daily scraping of New Zealand bank home loan rates with minimal mainte
 - **Stateful updates** - only stores rate changes, not duplicates
 - **Rate change tracking** - visualizes how rates changed since previous scrape with color-coded indicators and highlights recent changes (last 14 days) with yellow background
 - **New product badges** - identifies loan products introduced within last 30 days
+- **Mobile responsive** - card-based layout optimized for mobile screens
 - **Zero maintenance** - auto-extracts API keys from bank websites
 - **Free hosting** - GitHub Pages serves static HTML visualization
 - **Extensible** - designed to easily add more banks
