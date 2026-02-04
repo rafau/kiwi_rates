@@ -6,13 +6,14 @@ from pathlib import Path
 
 def extract_latest_rates(data_file: Path) -> list[dict]:
     """
-    Extract latest rates from a data file.
+    Extract latest rates with change calculation from data file.
 
     Args:
         data_file: Path to bank rates JSON file
 
     Returns:
-        List of latest rate entries per product/term combination
+        List of latest rate entries per product/term combination,
+        each enriched with a 'rate_change' field
     """
     with open(data_file) as f:
         data = json.load(f)
@@ -22,19 +23,37 @@ def extract_latest_rates(data_file: Path) -> list[dict]:
     if not rates:
         return []
 
-    # Build map of latest rate per product/term
-    latest_map = {}
+    # Build map tracking ALL rates per product/term (not just latest)
+    rates_by_product = {}  # key: (product_name, term) -> list of rate entries
+
     for rate in rates:
         key = (rate["product_name"], rate["term"])
-        # Keep the most recent (assuming chronological order, or compare scraped_at)
-        if key not in latest_map:
-            latest_map[key] = rate
-        else:
-            # Compare timestamps to keep the latest
-            if rate["scraped_at"] > latest_map[key]["scraped_at"]:
-                latest_map[key] = rate
+        if key not in rates_by_product:
+            rates_by_product[key] = []
+        rates_by_product[key].append(rate)
 
-    return list(latest_map.values())
+    # Extract latest and calculate changes
+    result = []
+    for key, rate_list in rates_by_product.items():
+        # Sort by scraped_at to ensure chronological order
+        sorted_rates = sorted(rate_list, key=lambda r: r["scraped_at"])
+
+        # Get latest rate
+        latest = sorted_rates[-1]
+
+        # Calculate change
+        if len(sorted_rates) >= 2:
+            previous = sorted_rates[-2]
+            rate_change = round(latest["rate_percentage"] - previous["rate_percentage"], 2)
+        else:
+            rate_change = 0.00
+
+        # Add rate_change field to latest entry
+        enriched_rate = latest.copy()
+        enriched_rate["rate_change"] = rate_change
+        result.append(enriched_rate)
+
+    return result
 
 
 def generate_html(data_dir: Path, output_file: Path) -> None:
@@ -141,6 +160,21 @@ def generate_html_content(bank_rates: dict[str, list[dict]]) -> str:
             font-weight: 600;
             color: #2c5282;
         }}
+        .rate-change-positive {{
+            color: #e53e3e;
+            font-size: 0.9em;
+            margin-left: 4px;
+        }}
+        .rate-change-negative {{
+            color: #38a169;
+            font-size: 0.9em;
+            margin-left: 4px;
+        }}
+        .rate-change-neutral {{
+            color: #718096;
+            font-size: 0.9em;
+            margin-left: 4px;
+        }}
     </style>
 </head>
 <body>
@@ -175,10 +209,22 @@ def generate_html_content(bank_rates: dict[str, list[dict]]) -> str:
                 except:
                     scraped_date = rate["scraped_at"]
 
+                # Determine change styling
+                rate_change = rate.get("rate_change", 0.00)
+                if rate_change > 0:
+                    change_class = "rate-change-positive"
+                    sign = "+"
+                elif rate_change < 0:
+                    change_class = "rate-change-negative"
+                    sign = "-"
+                else:
+                    change_class = "rate-change-neutral"
+                    sign = ""
+
                 html += f"""                <tr>
                     <td>{rate['product_name']}</td>
                     <td>{rate['term']}</td>
-                    <td class="rate">{rate['rate_percentage']:.2f}%</td>
+                    <td class="rate">{rate['rate_percentage']:.2f}% <span class="{change_class}">({sign}{abs(rate_change):.2f})</span></td>
                     <td>{scraped_date}</td>
                 </tr>
 """
