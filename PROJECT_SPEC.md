@@ -285,6 +285,12 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
   - Helps users quickly identify newly introduced loan products
   - Badge automatically disappears after 30 days
   - Can appear alongside recent change highlighting (yellow background + NEW badge)
+- **Date information**:
+  - **Top header**: Shows "Last rate change: YYYY-MM-DD" - the most recent date when any rate actually changed across all banks
+  - **Below each table**: Shows two timestamps per bank:
+    - "Page generated: YYYY-MM-DD HH:MM:SS" - when the HTML was generated
+    - "Data last scraped: YYYY-MM-DD HH:MM:SS" - when our scraper last ran for this bank
+  - If no rate changes detected, top header shows "No changes detected"
 - **No charts**: Simple is sufficient for now
 - **Data source**: Read all `data/*_rates.json` files, extract latest rate per product/term combo
 

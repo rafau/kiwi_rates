@@ -103,6 +103,14 @@ def test_generate_html(tmp_path, sample_bnz_data):
     assert "Variable" in html_content
     assert "5.84" in html_content
 
+    # Check for "Last rate change:" at top (instead of "Last updated:")
+    assert "Last rate change:" in html_content
+
+    # Check for dates section below table
+    assert "Page generated:" in html_content
+    assert "Data last scraped:" in html_content
+    assert "bank-dates" in html_content
+
 
 def test_generate_html_multiple_banks(tmp_path):
     """Test generating HTML with multiple banks."""
@@ -150,6 +158,11 @@ def test_generate_html_multiple_banks(tmp_path):
     assert "ANZ" in html_content
     assert "4.49" in html_content
     assert "4.59" in html_content
+
+    # Each bank should have its own dates section
+    assert html_content.count("Page generated:") == 2
+    assert html_content.count("Data last scraped:") == 2
+    assert html_content.count("bank-dates") >= 2
 
 
 def test_extract_latest_rates_with_rate_increase(tmp_path):
@@ -907,3 +920,247 @@ def test_generate_html_new_product_with_recent_change_styling(tmp_path):
     # Verify the row has recent-change class
     # And the product name has NEW badge
     assert "NewRecentProduct" in html_content
+
+
+def test_generate_html_includes_dates_section(tmp_path):
+    """Test that HTML includes dates section with correct structure."""
+    from datetime import datetime, timezone
+
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+
+    now = datetime.now(timezone.utc)
+
+    bnz_data = {
+        "last_scraped": now.isoformat(),
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": now.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.49
+            }
+        ]
+    }
+
+    (data_dir / "bnz_rates.json").write_text(json.dumps(bnz_data))
+
+    output_file = tmp_path / "index.html"
+    generate_html(data_dir, output_file)
+
+    html_content = output_file.read_text()
+
+    # Verify dates section structure
+    assert 'class="bank-dates"' in html_content
+    assert "Page generated:" in html_content
+    assert "Data last scraped:" in html_content
+
+    # Verify CSS class is defined
+    assert ".bank-dates" in html_content
+
+
+def test_generate_html_last_rate_change_header(tmp_path):
+    """Test that top header shows 'Last rate change' with date."""
+    from datetime import datetime, timedelta, timezone
+
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+
+    now = datetime.now(timezone.utc)
+    seven_days_ago = now - timedelta(days=7)
+    fourteen_days_ago = now - timedelta(days=14)
+
+    bnz_data = {
+        "last_scraped": now.isoformat(),
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": fourteen_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.49
+            },
+            {
+                "scraped_at": seven_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.75
+            }
+        ]
+    }
+
+    (data_dir / "bnz_rates.json").write_text(json.dumps(bnz_data))
+
+    output_file = tmp_path / "index.html"
+    generate_html(data_dir, output_file)
+
+    html_content = output_file.read_text()
+
+    # Verify "Last rate change:" header exists
+    assert "Last rate change:" in html_content
+
+    # Should not contain old "Last updated:"
+    assert "Last updated:" not in html_content
+
+
+def test_generate_html_last_rate_change_no_changes(tmp_path):
+    """Test scenario where rates array has no changes."""
+    from datetime import datetime, timezone
+
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+
+    now = datetime.now(timezone.utc)
+
+    # Only one entry per product (no changes)
+    bnz_data = {
+        "last_scraped": now.isoformat(),
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": now.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.49
+            }
+        ]
+    }
+
+    (data_dir / "bnz_rates.json").write_text(json.dumps(bnz_data))
+
+    output_file = tmp_path / "index.html"
+    generate_html(data_dir, output_file)
+
+    html_content = output_file.read_text()
+
+    # Should show "No changes detected" or similar
+    assert "Last rate change:" in html_content
+    assert ("No changes detected" in html_content or "N/A" in html_content)
+
+
+def test_get_most_recent_rate_change():
+    """Test helper function get_most_recent_rate_change."""
+    from datetime import datetime, timedelta, timezone
+    from src.html_generator import get_most_recent_rate_change
+
+    now = datetime.now(timezone.utc)
+    seven_days_ago = now - timedelta(days=7)
+    fourteen_days_ago = now - timedelta(days=14)
+
+    # Test with multiple rates with changes
+    rates = [
+        {
+            "scraped_at": fourteen_days_ago.isoformat(),
+            "rate_change": 0.10
+        },
+        {
+            "scraped_at": seven_days_ago.isoformat(),
+            "rate_change": 0.20
+        }
+    ]
+    result = get_most_recent_rate_change(rates)
+    assert result is not None
+    assert seven_days_ago.strftime("%Y-%m-%d") in result
+
+    # Test with all rates having no changes
+    rates_no_change = [
+        {
+            "scraped_at": fourteen_days_ago.isoformat(),
+            "rate_change": 0.00
+        },
+        {
+            "scraped_at": seven_days_ago.isoformat(),
+            "rate_change": 0.00
+        }
+    ]
+    result = get_most_recent_rate_change(rates_no_change)
+    assert result is None
+
+    # Test with empty rates list
+    result = get_most_recent_rate_change([])
+    assert result is None
+
+    # Test mixed scenario
+    rates_mixed = [
+        {
+            "scraped_at": fourteen_days_ago.isoformat(),
+            "rate_change": 0.10
+        },
+        {
+            "scraped_at": seven_days_ago.isoformat(),
+            "rate_change": 0.00
+        }
+    ]
+    result = get_most_recent_rate_change(rates_mixed)
+    assert result is not None
+    assert fourteen_days_ago.strftime("%Y-%m-%d") in result
+
+
+def test_generate_html_multiple_banks_global_last_change(tmp_path):
+    """Test that top header shows most recent change across all banks."""
+    from datetime import datetime, timedelta, timezone
+
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+
+    now = datetime.now(timezone.utc)
+    five_days_ago = now - timedelta(days=5)
+    ten_days_ago = now - timedelta(days=10)
+    twenty_days_ago = now - timedelta(days=20)
+
+    # BNZ has an older change (10 days ago)
+    bnz_data = {
+        "last_scraped": now.isoformat(),
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": twenty_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.49
+            },
+            {
+                "scraped_at": ten_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.59
+            }
+        ]
+    }
+
+    # ANZ has a newer change (5 days ago)
+    anz_data = {
+        "last_scraped": now.isoformat(),
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": twenty_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.39
+            },
+            {
+                "scraped_at": five_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.49
+            }
+        ]
+    }
+
+    (data_dir / "bnz_rates.json").write_text(json.dumps(bnz_data))
+    (data_dir / "anz_rates.json").write_text(json.dumps(anz_data))
+
+    output_file = tmp_path / "index.html"
+    generate_html(data_dir, output_file)
+
+    html_content = output_file.read_text()
+
+    # Verify top header shows "Last rate change:"
+    assert "Last rate change:" in html_content
+
+    # The date should be from the most recent change (5 days ago = ANZ)
+    # Format: YYYY-MM-DD
+    expected_date = five_days_ago.strftime("%Y-%m-%d")
+    assert expected_date in html_content

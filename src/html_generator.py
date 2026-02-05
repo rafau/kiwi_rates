@@ -78,6 +78,36 @@ def extract_latest_rates(data_file: Path) -> list[dict]:
     return result
 
 
+def get_most_recent_rate_change(rates: list[dict]) -> str | None:
+    """
+    Find most recent rate change date from a list of rates.
+
+    Args:
+        rates: List of rate entries (with rate_change field)
+
+    Returns:
+        Formatted date string (YYYY-MM-DD) or None if no changes detected
+    """
+    if not rates:
+        return None
+
+    # Filter to only rates with actual changes
+    changed_rates = [r for r in rates if r.get("rate_change", 0.00) != 0.00]
+
+    if not changed_rates:
+        return None
+
+    # Find the most recent scraped_at date
+    most_recent = max(changed_rates, key=lambda r: r["scraped_at"])
+
+    # Format as YYYY-MM-DD
+    try:
+        scraped_date = datetime.fromisoformat(most_recent["scraped_at"])
+        return scraped_date.strftime("%Y-%m-%d")
+    except:
+        return None
+
+
 def generate_html(data_dir: Path, output_file: Path) -> None:
     """
     Generate HTML visualization from all rate data files.
@@ -89,40 +119,56 @@ def generate_html(data_dir: Path, output_file: Path) -> None:
     # Collect all rate files
     rate_files = sorted(data_dir.glob("*_rates.json"))
 
-    # Build data structure: bank -> rates
-    bank_rates = {}
+    # Build data structure: bank -> {rates, last_scraped}
+    bank_data = {}
+    all_rates = []  # Collect all rates to find global most recent change
 
     for rate_file in rate_files:
         # Extract bank name from filename (e.g., "bnz_rates.json" -> "BNZ")
         bank_name = rate_file.stem.replace("_rates", "").upper()
 
+        # Load full JSON to get metadata
+        with open(rate_file) as f:
+            data = json.load(f)
+
         latest_rates = extract_latest_rates(rate_file)
 
         if latest_rates:
-            bank_rates[bank_name] = sorted(
-                latest_rates,
-                key=lambda r: (r["product_name"], r["term"])
-            )
+            bank_data[bank_name] = {
+                "rates": sorted(latest_rates, key=lambda r: (r["product_name"], r["term"])),
+                "last_scraped": data.get("last_scraped")
+            }
+            all_rates.extend(latest_rates)
+
+    # Calculate most recent rate change across all banks
+    most_recent_change = get_most_recent_rate_change(all_rates)
 
     # Generate HTML
-    html = generate_html_content(bank_rates)
+    html = generate_html_content(bank_data, most_recent_change)
 
     # Save to file
     output_file.parent.mkdir(parents=True, exist_ok=True)
     output_file.write_text(html)
 
 
-def generate_html_content(bank_rates: dict[str, list[dict]]) -> str:
+def generate_html_content(bank_data: dict[str, dict], most_recent_change: str | None) -> str:
     """
     Generate HTML content from bank rates data.
 
     Args:
-        bank_rates: Dictionary mapping bank name to list of rates
+        bank_data: Dictionary mapping bank name to dict with 'rates' and 'last_scraped'
+        most_recent_change: Most recent rate change date (YYYY-MM-DD) or None
 
     Returns:
         HTML string
     """
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # Format last rate change display
+    if most_recent_change:
+        last_change_display = f"Last rate change: {most_recent_change}"
+    else:
+        last_change_display = "Last rate change: No changes detected"
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -215,6 +261,17 @@ def generate_html_content(bank_rates: dict[str, list[dict]]) -> str:
             margin-left: 6px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }}
+        .bank-dates {{
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.85em;
+            color: #718096;
+            text-align: left;
+        }}
+        .bank-dates p {{
+            margin: 3px 0;
         }}
 
         /* Mobile responsive styles */
@@ -336,6 +393,11 @@ def generate_html_content(bank_rates: dict[str, list[dict]]) -> str:
             .last-updated {{
                 font-size: 0.9em;
             }}
+
+            /* Bank dates responsive styling */
+            .bank-dates {{
+                font-size: 0.85em;
+            }}
         }}
 
         /* Optional: Tablet optimization */
@@ -353,14 +415,27 @@ def generate_html_content(bank_rates: dict[str, list[dict]]) -> str:
 </head>
 <body>
     <h1>Kiwi Rates</h1>
-    <p class="last-updated">Last updated: {now}</p>
+    <p class="last-updated">{last_change_display}</p>
 """
 
-    if not bank_rates:
+    if not bank_data:
         html += """    <p style="text-align: center; color: #666;">No rate data available.</p>
 """
     else:
-        for bank_name, rates in sorted(bank_rates.items()):
+        for bank_name, bank_info in sorted(bank_data.items()):
+            rates = bank_info["rates"]
+            last_scraped = bank_info.get("last_scraped", "N/A")
+
+            # Format last_scraped timestamp
+            try:
+                if last_scraped != "N/A":
+                    last_scraped_dt = datetime.fromisoformat(last_scraped)
+                    last_scraped_formatted = last_scraped_dt.strftime("%Y-%m-%d %H:%M:%S")
+                else:
+                    last_scraped_formatted = "N/A"
+            except:
+                last_scraped_formatted = str(last_scraped)
+
             html += f"""
     <div class="bank-section">
         <h2>{bank_name}</h2>
@@ -411,8 +486,12 @@ def generate_html_content(bank_rates: dict[str, list[dict]]) -> str:
                 </tr>
 """
 
-            html += """            </tbody>
+            html += f"""            </tbody>
         </table>
+        <div class="bank-dates">
+            <p>Page generated: {now}</p>
+            <p>Data last scraped: {last_scraped_formatted}</p>
+        </div>
     </div>
 """
 
