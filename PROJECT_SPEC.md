@@ -162,7 +162,7 @@ Mapping:
 ```
 
 ## Technology Stack
-- **Python 3.13** (latest stable version)
+- **Python 3.14** (latest stable version)
 - **Package Manager**: uv for dependency/environment management
 - **Libraries**:
   - `requests`: HTTP requests
@@ -311,6 +311,7 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
 - [x] Rate change display (2026-02-04): HTML visualization now shows rate changes since previous scrape with color-coded indicators (red=increase, green=decrease, gray=neutral)
 - [x] Recent change highlighting (2026-02-04): Rows with rate changes in last 14 days now highlighted with yellow background for quick identification of recent market movements
 - [x] New product indicator (2026-02-04): Products first appearing within 30 days show blue NEW badge for easy identification
+- [x] Python upgrade (2026-02-05): Upgraded from Python 3.13 to 3.14 for latest features and security patches
 
 ## Notes
 - User is experienced senior software engineer

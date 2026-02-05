@@ -35,7 +35,7 @@ This modular design makes adding new banks straightforward and keeps bank-specif
 
 ## Architecture
 
-- **Language**: Python 3.13
+- **Language**: Python 3.14
 - **Package Manager**: uv
 - **Dependencies**: requests (HTTP), pytest (testing), stdlib (everything else)
 - **Storage**: JSON files (one per bank)
@@ -100,7 +100,7 @@ Each bank has a separate JSON file (`data/{bank}_rates.json`):
 
 ### Prerequisites
 
-- Python 3.13+
+- Python 3.14+
 - [uv](https://docs.astral.sh/uv/) package manager
 
 ### Local Development
