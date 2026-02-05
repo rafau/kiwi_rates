@@ -68,11 +68,11 @@ def test_parse_bnz_rates_strips_whitespace():
 
 
 def test_parse_bnz_rates_empty():
-    """Test parsing XML with no rates."""
+    """Test parsing XML with no rates raises ValueError."""
     xml = """<?xml version="1.0"?><rss><standard></standard></rss>"""
 
-    rates = parse_rates(xml)
-    assert rates == []
+    with pytest.raises(ValueError, match="No rates found in XML feed"):
+        parse_rates(xml)
 
 
 def test_parse_bnz_rates_converts_interest_to_float():
@@ -85,3 +85,16 @@ def test_parse_bnz_rates_converts_interest_to_float():
     rates = parse_rates(xml)
     assert isinstance(rates[0]["rate_percentage"], float)
     assert rates[0]["rate_percentage"] == 4.69
+
+
+def test_parse_bnz_rates_empty_xml_raises_error():
+    """Test that empty XML with valid structure but no rates raises ValueError."""
+    xml = """<?xml version="1.0"?>
+    <rss version="2.0">
+        <standard type="HL">
+            <lastupdated>Monday, 05 February 2026</lastupdated>
+        </standard>
+    </rss>"""
+
+    with pytest.raises(ValueError, match="No rates found in XML feed"):
+        parse_rates(xml)

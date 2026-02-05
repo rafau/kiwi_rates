@@ -101,11 +101,9 @@ def get_most_recent_rate_change(rates: list[dict]) -> str | None:
     most_recent = max(changed_rates, key=lambda r: r["scraped_at"])
 
     # Format as YYYY-MM-DD
-    try:
-        scraped_date = datetime.fromisoformat(most_recent["scraped_at"])
-        return scraped_date.strftime("%Y-%m-%d")
-    except:
-        return None
+    # Let this raise ValueError if date is malformed - FAIL LOUDLY
+    scraped_date = datetime.fromisoformat(most_recent["scraped_at"])
+    return scraped_date.strftime("%Y-%m-%d")
 
 
 def generate_html(data_dir: Path, output_file: Path) -> None:
@@ -440,11 +438,8 @@ def generate_html_content(bank_data: dict[str, dict], most_recent_change: str | 
 """
 
             for rate in rates:
-                # Format the scraped_at date
-                try:
-                    scraped_date = datetime.fromisoformat(rate["scraped_at"]).strftime("%Y-%m-%d")
-                except:
-                    scraped_date = rate["scraped_at"]
+                # Format the scraped_at date - let it raise ValueError if malformed (FAIL LOUDLY)
+                scraped_date = datetime.fromisoformat(rate["scraped_at"]).strftime("%Y-%m-%d")
 
                 # Determine change styling
                 rate_change = rate.get("rate_change", 0.00)

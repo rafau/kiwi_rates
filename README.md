@@ -284,6 +284,20 @@ uv run pytest --cov=src
 
 ## Troubleshooting
 
+### How to verify scraper health
+
+The scraper is monitored via GitHub Actions:
+- **Workflow succeeds**: Scraper ran successfully (may or may not have committed changes)
+- **Workflow fails**: You'll receive email notification with error details
+- Check "Page generated:" timestamp in HTML to confirm recent successful run
+- All errors are loud failures - no silent data corruption
+
+Common failure scenarios:
+- BNZ website structure changed (API key extraction fails)
+- BNZ API returned empty data (no rates found)
+- Network issues (after 5 retries with exponential backoff)
+- Malformed data in JSON files
+
 ### Scraper fails with 403 error
 
 The API may be blocking requests. Check if headers need updating in `src/bnz/scraper.py`.

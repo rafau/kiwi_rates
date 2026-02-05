@@ -492,3 +492,12 @@ def test_filter_changed_rates_handles_duplicates_in_existing():
 
     # Should compare against latest (4.59), so no change detected
     assert result == []
+
+
+def test_load_rates_corrupt_json_raises_error(temp_json_file):
+    """Test that corrupt JSON file raises ValueError with clear context."""
+    # Write invalid JSON to file
+    temp_json_file.write_text("{invalid json content")
+
+    with pytest.raises(ValueError, match=f"Failed to parse JSON from {temp_json_file}"):
+        load_rates(temp_json_file)

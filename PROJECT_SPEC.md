@@ -244,10 +244,13 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
 - **Rationale**: Gives banks time to update websites during business day, captures all changes for that day
 - **GitHub Actions cron**: `0 10 * * *` (10:00 UTC = 11:00 PM NZDT in summer, 10:00 PM NZST in winter - may need adjustment)
 
-### Error Handling
-- **Retry logic**: Retry failed requests a few times (e.g., 3 attempts with exponential backoff)
-- **Budget awareness**: Keep total runtime low to avoid consuming GitHub Actions free tier
-- **Failure behavior**: Log error but don't crash - allow workflow to complete
+### Error Handling Strategy
+- **Fail loudly**: All errors raise exceptions (no silent failures)
+- **Validation**: Empty results treated as errors (BNZ parser raises ValueError if no rates found)
+- **Retry logic**: Network failures retry 5 times with exponential backoff
+- **Workflow guards**: GitHub Actions won't commit on scraper failure (`if: success()` condition)
+- **Monitoring**: Email notifications on workflow failures
+- **Clear error messages**: JSON decode errors, date parsing failures, and missing data all raise descriptive errors
 
 ### Bootstrap/Initialization
 - **Seed files**: User provides initial empty/seed JSON file for each bank
@@ -309,6 +312,12 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
 - [x] Recent change highlighting (2026-02-04): Rows with rate changes in last 14 days now highlighted with yellow background for quick identification of recent market movements
 - [x] New product indicator (2026-02-04): Products first appearing within 30 days show blue NEW badge for easy identification
 - [x] Python upgrade (2026-02-05): Upgraded from Python 3.13 to 3.14 for latest features and security patches
+- [x] Error handling hardening (2026-02-05): Implemented fail-loudly error handling strategy:
+  - GitHub Actions workflow guard prevents committing on scraper failure
+  - Empty rates validation raises error instead of silent success
+  - Removed bare except clauses - date parsing failures now propagate
+  - JSON decode errors provide clear context messages
+  - 59 comprehensive tests ensure reliability
 
 ## Notes
 - User is experienced senior software engineer

@@ -12,6 +12,9 @@ def load_rates(file_path: Path) -> dict:
 
     Returns:
         Dictionary with bank_last_updated and rates
+
+    Raises:
+        ValueError: If JSON file is corrupt or malformed
     """
     if not file_path.exists():
         return {
@@ -19,8 +22,11 @@ def load_rates(file_path: Path) -> dict:
             "rates": []
         }
 
-    with open(file_path) as f:
-        return json.load(f)
+    try:
+        with open(file_path) as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Failed to parse JSON from {file_path}: {e}") from e
 
 
 def save_rates(file_path: Path, data: dict) -> None:

@@ -43,6 +43,9 @@ def parse_rates(xml_content: str) -> list[dict[str, str | float]]:
 
     Returns:
         List of rate dictionaries with product_name, term, and rate_percentage
+
+    Raises:
+        ValueError: If no rates found in XML feed
     """
     root = ET.fromstring(xml_content)
     rates = []
@@ -59,5 +62,8 @@ def parse_rates(xml_content: str) -> list[dict[str, str | float]]:
                     "term": term_elem.text.strip(),
                     "rate_percentage": float(interest_elem.text.strip())
                 })
+
+    if len(rates) == 0:
+        raise ValueError("No rates found in XML feed - BNZ API may be down or response format changed")
 
     return rates

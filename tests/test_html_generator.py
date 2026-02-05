@@ -1133,3 +1133,43 @@ def test_generate_html_multiple_banks_global_last_change(tmp_path):
     # Format: YYYY-MM-DD
     expected_date = five_days_ago.strftime("%Y-%m-%d")
     assert expected_date in html_content
+
+
+def test_get_most_recent_rate_change_invalid_date_raises_error():
+    """Test that malformed dates in rate data raise errors instead of being silently caught."""
+    from src.html_generator import get_most_recent_rate_change
+
+    rates = [
+        {
+            "scraped_at": "INVALID DATE FORMAT",
+            "rate_change": 0.10
+        }
+    ]
+
+    with pytest.raises(ValueError):
+        get_most_recent_rate_change(rates)
+
+
+def test_generate_html_content_invalid_date_raises_error(tmp_path):
+    """Test that HTML generation fails loudly with malformed date instead of silently handling it."""
+    from src.html_generator import generate_html_content
+
+    # Data with malformed date
+    bank_data = {
+        "BNZ": {
+            "rates": [
+                {
+                    "scraped_at": "NOT A VALID DATE",
+                    "product_name": "Standard",
+                    "term": "1 year",
+                    "rate_percentage": 4.49,
+                    "rate_change": 0.00,
+                    "is_recent_change": False,
+                    "is_new_product": False
+                }
+            ]
+        }
+    }
+
+    with pytest.raises(ValueError):
+        generate_html_content(bank_data, None)
