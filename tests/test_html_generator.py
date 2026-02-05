@@ -11,7 +11,6 @@ from src.html_generator import generate_html, extract_latest_rates
 def sample_bnz_data(tmp_path):
     """Create sample BNZ data file."""
     data = {
-        "last_scraped": "2025-12-22T12:00:00+13:00",
         "bank_last_updated": "2025-12-18T00:00:00+13:00",
         "rates": [
             {
@@ -64,7 +63,6 @@ def test_extract_latest_rates(sample_bnz_data):
 def test_extract_latest_rates_empty_file(tmp_path):
     """Test extracting from empty data file."""
     empty_data = {
-        "last_scraped": None,
         "bank_last_updated": None,
         "rates": []
     }
@@ -108,7 +106,6 @@ def test_generate_html(tmp_path, sample_bnz_data):
 
     # Check for dates section below table
     assert "Page generated:" in html_content
-    assert "Data last scraped:" in html_content
     assert "bank-dates" in html_content
 
 
@@ -119,7 +116,6 @@ def test_generate_html_multiple_banks(tmp_path):
 
     # Create BNZ data
     bnz_data = {
-        "last_scraped": "2025-12-22T12:00:00+13:00",
         "bank_last_updated": "2025-12-18T00:00:00+13:00",
         "rates": [
             {
@@ -133,7 +129,6 @@ def test_generate_html_multiple_banks(tmp_path):
 
     # Create ANZ data
     anz_data = {
-        "last_scraped": "2025-12-22T12:00:00+13:00",
         "bank_last_updated": "2025-12-18T00:00:00+13:00",
         "rates": [
             {
@@ -161,14 +156,12 @@ def test_generate_html_multiple_banks(tmp_path):
 
     # Each bank should have its own dates section
     assert html_content.count("Page generated:") == 2
-    assert html_content.count("Data last scraped:") == 2
     assert html_content.count("bank-dates") >= 2
 
 
 def test_extract_latest_rates_with_rate_increase(tmp_path):
     """Test extracting rates when rate increases."""
     data = {
-        "last_scraped": "2025-12-22T12:00:00+13:00",
         "bank_last_updated": "2025-12-18T00:00:00+13:00",
         "rates": [
             {
@@ -201,7 +194,6 @@ def test_extract_latest_rates_with_rate_increase(tmp_path):
 def test_extract_latest_rates_with_rate_decrease(tmp_path):
     """Test extracting rates when rate decreases."""
     data = {
-        "last_scraped": "2025-12-22T12:00:00+13:00",
         "bank_last_updated": "2025-12-18T00:00:00+13:00",
         "rates": [
             {
@@ -234,7 +226,6 @@ def test_extract_latest_rates_with_rate_decrease(tmp_path):
 def test_extract_latest_rates_single_entry(tmp_path):
     """Test extracting rates when only one entry exists."""
     data = {
-        "last_scraped": "2025-12-22T12:00:00+13:00",
         "bank_last_updated": "2025-12-18T00:00:00+13:00",
         "rates": [
             {
@@ -261,7 +252,6 @@ def test_extract_latest_rates_single_entry(tmp_path):
 def test_extract_latest_rates_no_change(tmp_path):
     """Test extracting rates when rate doesn't change."""
     data = {
-        "last_scraped": "2025-12-22T12:00:00+13:00",
         "bank_last_updated": "2025-12-18T00:00:00+13:00",
         "rates": [
             {
@@ -294,7 +284,6 @@ def test_extract_latest_rates_no_change(tmp_path):
 def test_extract_latest_rates_multiple_changes(tmp_path):
     """Test extracting rates with multiple changes - should compare last two."""
     data = {
-        "last_scraped": "2025-12-22T12:00:00+13:00",
         "bank_last_updated": "2025-12-18T00:00:00+13:00",
         "rates": [
             {
@@ -338,7 +327,6 @@ def test_generate_html_includes_rate_changes(tmp_path):
 
     # Create data with rate changes
     bnz_data = {
-        "last_scraped": "2025-12-22T12:00:00+13:00",
         "bank_last_updated": "2025-12-18T00:00:00+13:00",
         "rates": [
             {
@@ -409,7 +397,6 @@ def test_extract_latest_rates_with_recent_change(tmp_path):
     fourteen_days_ago = now - timedelta(days=14)
 
     data = {
-        "last_scraped": now.isoformat(),
         "bank_last_updated": now.isoformat(),
         "rates": [
             {
@@ -450,7 +437,6 @@ def test_extract_latest_rates_with_old_change(tmp_path):
     thirty_days_ago = now - timedelta(days=30)
 
     data = {
-        "last_scraped": now.isoformat(),
         "bank_last_updated": now.isoformat(),
         "rates": [
             {
@@ -490,7 +476,6 @@ def test_extract_latest_rates_no_change_not_recent(tmp_path):
     five_days_ago = now - timedelta(days=5)
 
     data = {
-        "last_scraped": now.isoformat(),
         "bank_last_updated": now.isoformat(),
         "rates": [
             {
@@ -528,7 +513,6 @@ def test_generate_html_includes_recent_change_class(tmp_path):
     fourteen_days_ago = now - timedelta(days=14)
 
     bnz_data = {
-        "last_scraped": now.isoformat(),
         "bank_last_updated": now.isoformat(),
         "rates": [
             {
@@ -573,7 +557,6 @@ def test_generate_html_excludes_recent_change_for_old(tmp_path):
     thirty_days_ago = now - timedelta(days=30)
 
     bnz_data = {
-        "last_scraped": now.isoformat(),
         "bank_last_updated": now.isoformat(),
         "rates": [
             {
@@ -613,7 +596,6 @@ def test_extract_latest_rates_new_product_within_30_days(tmp_path):
     fifteen_days_ago = now - timedelta(days=15)
 
     data = {
-        "last_scraped": now.isoformat(),
         "bank_last_updated": now.isoformat(),
         "rates": [
             {
@@ -648,7 +630,6 @@ def test_extract_latest_rates_old_product_over_30_days(tmp_path):
     forty_eight_days_ago = now - timedelta(days=48)
 
     data = {
-        "last_scraped": now.isoformat(),
         "bank_last_updated": now.isoformat(),
         "rates": [
             {
@@ -683,7 +664,6 @@ def test_extract_latest_rates_exactly_30_days(tmp_path):
     thirty_days_ago = now - timedelta(days=30)
 
     data = {
-        "last_scraped": now.isoformat(),
         "bank_last_updated": now.isoformat(),
         "rates": [
             {
@@ -719,7 +699,6 @@ def test_extract_latest_rates_new_product_with_rate_changes(tmp_path):
     ten_days_ago = now - timedelta(days=10)
 
     data = {
-        "last_scraped": now.isoformat(),
         "bank_last_updated": now.isoformat(),
         "rates": [
             {
@@ -762,7 +741,6 @@ def test_extract_latest_rates_new_and_recent_change(tmp_path):
     five_days_ago = now - timedelta(days=5)
 
     data = {
-        "last_scraped": now.isoformat(),
         "bank_last_updated": now.isoformat(),
         "rates": [
             {
@@ -807,7 +785,6 @@ def test_generate_html_includes_new_product_badge(tmp_path):
     fifteen_days_ago = now - timedelta(days=15)
 
     bnz_data = {
-        "last_scraped": now.isoformat(),
         "bank_last_updated": now.isoformat(),
         "rates": [
             {
@@ -846,7 +823,6 @@ def test_generate_html_excludes_new_badge_for_old_products(tmp_path):
     forty_eight_days_ago = now - timedelta(days=48)
 
     bnz_data = {
-        "last_scraped": now.isoformat(),
         "bank_last_updated": now.isoformat(),
         "rates": [
             {
@@ -887,7 +863,6 @@ def test_generate_html_new_product_with_recent_change_styling(tmp_path):
     five_days_ago = now - timedelta(days=5)
 
     bnz_data = {
-        "last_scraped": now.isoformat(),
         "bank_last_updated": now.isoformat(),
         "rates": [
             {
@@ -932,7 +907,6 @@ def test_generate_html_includes_dates_section(tmp_path):
     now = datetime.now(timezone.utc)
 
     bnz_data = {
-        "last_scraped": now.isoformat(),
         "bank_last_updated": now.isoformat(),
         "rates": [
             {
@@ -954,7 +928,6 @@ def test_generate_html_includes_dates_section(tmp_path):
     # Verify dates section structure
     assert 'class="bank-dates"' in html_content
     assert "Page generated:" in html_content
-    assert "Data last scraped:" in html_content
 
     # Verify CSS class is defined
     assert ".bank-dates" in html_content
@@ -972,7 +945,6 @@ def test_generate_html_last_rate_change_header(tmp_path):
     fourteen_days_ago = now - timedelta(days=14)
 
     bnz_data = {
-        "last_scraped": now.isoformat(),
         "bank_last_updated": now.isoformat(),
         "rates": [
             {
@@ -1015,7 +987,6 @@ def test_generate_html_last_rate_change_no_changes(tmp_path):
 
     # Only one entry per product (no changes)
     bnz_data = {
-        "last_scraped": now.isoformat(),
         "bank_last_updated": now.isoformat(),
         "rates": [
             {
@@ -1111,7 +1082,6 @@ def test_generate_html_multiple_banks_global_last_change(tmp_path):
 
     # BNZ has an older change (10 days ago)
     bnz_data = {
-        "last_scraped": now.isoformat(),
         "bank_last_updated": now.isoformat(),
         "rates": [
             {
@@ -1131,7 +1101,6 @@ def test_generate_html_multiple_banks_global_last_change(tmp_path):
 
     # ANZ has a newer change (5 days ago)
     anz_data = {
-        "last_scraped": now.isoformat(),
         "bank_last_updated": now.isoformat(),
         "rates": [
             {

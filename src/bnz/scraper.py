@@ -119,7 +119,6 @@ def scrape_bnz_rates(data_file: Path) -> dict:
 
     # Update metadata
     updated_data = {
-        "last_scraped": now_iso,
         "bank_last_updated": bank_last_updated.isoformat(),
         "rates": updated_rates
     }

@@ -135,8 +135,7 @@ def generate_html(data_dir: Path, output_file: Path) -> None:
 
         if latest_rates:
             bank_data[bank_name] = {
-                "rates": sorted(latest_rates, key=lambda r: (r["product_name"], r["term"])),
-                "last_scraped": data.get("last_scraped")
+                "rates": sorted(latest_rates, key=lambda r: (r["product_name"], r["term"]))
             }
             all_rates.extend(latest_rates)
 
@@ -156,7 +155,7 @@ def generate_html_content(bank_data: dict[str, dict], most_recent_change: str | 
     Generate HTML content from bank rates data.
 
     Args:
-        bank_data: Dictionary mapping bank name to dict with 'rates' and 'last_scraped'
+        bank_data: Dictionary mapping bank name to dict with 'rates'
         most_recent_change: Most recent rate change date (YYYY-MM-DD) or None
 
     Returns:
@@ -424,17 +423,6 @@ def generate_html_content(bank_data: dict[str, dict], most_recent_change: str | 
     else:
         for bank_name, bank_info in sorted(bank_data.items()):
             rates = bank_info["rates"]
-            last_scraped = bank_info.get("last_scraped", "N/A")
-
-            # Format last_scraped timestamp
-            try:
-                if last_scraped != "N/A":
-                    last_scraped_dt = datetime.fromisoformat(last_scraped)
-                    last_scraped_formatted = last_scraped_dt.strftime("%Y-%m-%d %H:%M:%S")
-                else:
-                    last_scraped_formatted = "N/A"
-            except:
-                last_scraped_formatted = str(last_scraped)
 
             html += f"""
     <div class="bank-section">
@@ -490,7 +478,6 @@ def generate_html_content(bank_data: dict[str, dict], most_recent_change: str | 
         </table>
         <div class="bank-dates">
             <p>Page generated: {now}</p>
-            <p>Data last scraped: {last_scraped_formatted}</p>
         </div>
     </div>
 """

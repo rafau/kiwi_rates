@@ -11,11 +11,10 @@ def load_rates(file_path: Path) -> dict:
         file_path: Path to JSON file
 
     Returns:
-        Dictionary with last_scraped, bank_last_updated, and rates
+        Dictionary with bank_last_updated and rates
     """
     if not file_path.exists():
         return {
-            "last_scraped": None,
             "bank_last_updated": None,
             "rates": []
         }
@@ -30,7 +29,7 @@ def save_rates(file_path: Path, data: dict) -> None:
 
     Args:
         file_path: Path to JSON file
-        data: Dictionary with last_scraped, bank_last_updated, and rates
+        data: Dictionary with bank_last_updated and rates
     """
     file_path.parent.mkdir(parents=True, exist_ok=True)
 

@@ -77,7 +77,6 @@ Each bank has a separate JSON file (`data/{bank}_rates.json`):
 
 ```json
 {
-  "last_scraped": "2025-12-22T12:00:00+13:00",
   "bank_last_updated": "2025-12-18T00:00:00+13:00",
   "rates": [
     {
@@ -92,9 +91,9 @@ Each bank has a separate JSON file (`data/{bank}_rates.json`):
 
 ### Stateful Updates
 
-- `last_scraped` - always updated (proves scraper is running)
 - `bank_last_updated` - when bank claims rates were updated
 - `rates` - only appends new entries when values actually change
+- Scraper health monitored via GitHub Actions failure notifications
 
 ## Setup
 
@@ -292,8 +291,8 @@ The API may be blocking requests. Check if headers need updating in `src/bnz/scr
 ### Rates not updating
 
 Check:
-1. GitHub Actions logs for errors
-2. `last_scraped` timestamp in JSON file
+1. GitHub Actions logs for errors (you'll receive email notifications on workflow failures)
+2. "Page generated:" timestamp in the HTML visualization
 3. Bank's website is accessible
 
 ### Tests failing

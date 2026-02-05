@@ -65,7 +65,6 @@ Automated daily scraping of NZ bank home loan rates with minimal future maintena
 ### JSON Structure (per bank file, e.g., `data/bnz_rates.json`)
 ```json
 {
-  "last_scraped": "2025-12-22T12:00:00+13:00",
   "bank_last_updated": "2025-12-18T00:00:00+13:00",
   "rates": [
     {
@@ -85,7 +84,6 @@ Automated daily scraping of NZ bank home loan rates with minimal future maintena
 ```
 
 ### Top-Level Fields
-- `last_scraped`: ISO timestamp with NZ timezone - when our scraper last ran (always updated, even if no rate changes)
 - `bank_last_updated`: ISO timestamp with NZ timezone - when bank claims rates were last updated (null if bank doesn't provide this data)
 
 ### Rate Entry Fields
@@ -96,7 +94,6 @@ Automated daily scraping of NZ bank home loan rates with minimal future maintena
 
 ### Storage Strategy
 - **Stateful updates**: Only append new entries to `rates` array when values actually change (implemented via `filter_changed_rates()` function)
-- **Always update**: `last_scraped` updated on every run (proves scraper is working)
 - **Comparison logic**: For each product/term combination, compare new rate against last entry; only store if different
 - **Bank name**: Identified by filename (`bnz_rates.json`, `anz_rates.json`, etc.), not stored in data
 - **Timezone**: All timestamps use NZ timezone (Pacific/Auckland, UTC+12/+13 depending on DST)
@@ -218,9 +215,9 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
 - Cleaner data - no redundant entries when rates don't change
 - Smaller file sizes - only meaningful changes recorded
 - Easy to visualize rate movements and trends
-- Less git noise - commits only when rates actually change
-- `last_scraped` field ensures we can detect if scraper stops working
+- Less git noise - commits only when rates actually change (no metadata-only updates)
 - `bank_last_updated` provides validation of actual bank updates vs our scrapes
+- Scraper health monitored via GitHub Actions failure notifications instead of git commits
 
 ### Why GitHub over AWS Lambda?
 - Free vs. ~$1-5/month
@@ -258,7 +255,8 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
 - **File structure**: Each bank file follows same schema
 
 ### Git Commit Strategy
-- **Always commit**: Yes, even if no rate changes (needed to preserve `last_scraped` timestamp)
+- **Commit only on changes**: Only commit when rates actually change (creates cleaner git history)
+- **Monitoring**: Scraper health tracked via GitHub Actions failure notifications (not git commits)
 - **Commit message**: Simple, auto-generated (e.g., "Update BNZ rates - 2025-12-22")
 - **Git config**: Use GitHub Actions bot identity
 
@@ -287,9 +285,8 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
   - Can appear alongside recent change highlighting (yellow background + NEW badge)
 - **Date information**:
   - **Top header**: Shows "Last rate change: YYYY-MM-DD" - the most recent date when any rate actually changed across all banks
-  - **Below each table**: Shows two timestamps per bank:
-    - "Page generated: YYYY-MM-DD HH:MM:SS" - when the HTML was generated
-    - "Data last scraped: YYYY-MM-DD HH:MM:SS" - when our scraper last ran for this bank
+  - **Below each table**: Shows timestamp per bank:
+    - "Page generated: YYYY-MM-DD HH:MM:SS" - when the HTML was generated (indicates scraper ran successfully)
   - If no rate changes detected, top header shows "No changes detected"
 - **No charts**: Simple is sufficient for now
 - **Data source**: Read all `data/*_rates.json` files, extract latest rate per product/term combo

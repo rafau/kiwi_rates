@@ -20,7 +20,6 @@ def temp_json_file(tmp_path):
 def sample_rates_data():
     """Sample rates data for testing."""
     return {
-        "last_scraped": "2025-12-20T12:00:00+13:00",
         "bank_last_updated": "2025-12-18T00:00:00+13:00",
         "rates": [
             {
@@ -53,7 +52,6 @@ def test_load_rates_nonexistent_file(temp_json_file):
     result = load_rates(temp_json_file)
 
     assert result == {
-        "last_scraped": None,
         "bank_last_updated": None,
         "rates": []
     }
@@ -62,7 +60,6 @@ def test_load_rates_nonexistent_file(temp_json_file):
 def test_save_rates(temp_json_file):
     """Test saving rates to file."""
     data = {
-        "last_scraped": "2025-12-22T12:00:00+13:00",
         "bank_last_updated": "2025-12-18T00:00:00+13:00",
         "rates": [
             {
