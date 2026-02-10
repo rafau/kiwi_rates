@@ -291,7 +291,7 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
   - Styled with `.days-ago` CSS class (gray, smaller font)
   - Always displayed for all rates, regardless of whether the rate changed
 - **Date information**:
-  - **Top header**: Shows "Last rate change: YYYY-MM-DD" - the most recent date when any rate actually changed across all banks
+  - **Top header**: Shows "Last rate change: YYYY-MM-DD (Xd)" - the most recent date when any rate actually changed across all banks, with days-ago indicator styled with `.days-ago` CSS class
   - **Below each table**: Shows timestamp per bank:
     - "Page generated: YYYY-MM-DD HH:MM:SS" - when the HTML was generated (indicates scraper ran successfully)
   - If no rate changes detected, top header shows "No changes detected"
@@ -316,7 +316,7 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
 - [x] Recent change highlighting (2026-02-04): Rows with rate changes in last 14 days now highlighted with yellow background for quick identification of recent market movements
 - [x] New product indicator (2026-02-04): Products first appearing within 30 days show blue NEW badge for easy identification
 - [x] Python upgrade (2026-02-05): Upgraded from Python 3.13 to 3.14 for latest features and security patches
-- [x] Days since update indicator (2026-02-10): Added `(Xd)` indicator to "Last Updated" column showing days since each rate was last updated
+- [x] Days since update indicator (2026-02-10): Added `(Xd)` indicator to "Last Updated" column showing days since each rate was last updated, and to the top "Last rate change" header
 - [x] Error handling hardening (2026-02-05): Implemented fail-loudly error handling strategy:
   - GitHub Actions workflow guard prevents committing on scraper failure
   - Empty rates validation raises error instead of silent success

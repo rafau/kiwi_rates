@@ -80,7 +80,7 @@ def extract_latest_rates(data_file: Path) -> list[dict]:
     return result
 
 
-def get_most_recent_rate_change(rates: list[dict]) -> str | None:
+def get_most_recent_rate_change(rates: list[dict]) -> tuple[str, int] | None:
     """
     Find most recent rate change date from a list of rates.
 
@@ -88,7 +88,7 @@ def get_most_recent_rate_change(rates: list[dict]) -> str | None:
         rates: List of rate entries (with rate_change field)
 
     Returns:
-        Formatted date string (YYYY-MM-DD) or None if no changes detected
+        Tuple of (formatted date string YYYY-MM-DD, days since change) or None if no changes detected
     """
     if not rates:
         return None
@@ -105,7 +105,8 @@ def get_most_recent_rate_change(rates: list[dict]) -> str | None:
     # Format as YYYY-MM-DD
     # Let this raise ValueError if date is malformed - FAIL LOUDLY
     scraped_date = datetime.fromisoformat(most_recent["scraped_at"])
-    return scraped_date.strftime("%Y-%m-%d")
+    days_since = (datetime.now(scraped_date.tzinfo) - scraped_date).days
+    return (scraped_date.strftime("%Y-%m-%d"), days_since)
 
 
 def generate_html(data_dir: Path, output_file: Path) -> None:
@@ -150,13 +151,13 @@ def generate_html(data_dir: Path, output_file: Path) -> None:
     output_file.write_text(html)
 
 
-def generate_html_content(bank_data: dict[str, dict], most_recent_change: str | None) -> str:
+def generate_html_content(bank_data: dict[str, dict], most_recent_change: tuple[str, int] | None) -> str:
     """
     Generate HTML content from bank rates data.
 
     Args:
         bank_data: Dictionary mapping bank name to dict with 'rates'
-        most_recent_change: Most recent rate change date (YYYY-MM-DD) or None
+        most_recent_change: Tuple of (date string YYYY-MM-DD, days since change) or None
 
     Returns:
         HTML string
@@ -165,7 +166,8 @@ def generate_html_content(bank_data: dict[str, dict], most_recent_change: str | 
 
     # Format last rate change display
     if most_recent_change:
-        last_change_display = f"Last rate change: {most_recent_change}"
+        date_str, days_since = most_recent_change
+        last_change_display = f'Last rate change: {date_str} <span class="days-ago">({days_since}d)</span>'
     else:
         last_change_display = "Last rate change: No changes detected"
 

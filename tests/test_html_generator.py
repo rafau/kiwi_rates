@@ -976,6 +976,53 @@ def test_generate_html_last_rate_change_header(tmp_path):
     assert "Last updated:" not in html_content
 
 
+def test_generate_html_last_rate_change_header_includes_days_since(tmp_path):
+    """Test that top header shows days-since indicator like (7d) with days-ago class."""
+    from datetime import datetime, timedelta, timezone
+
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+
+    now = datetime.now(timezone.utc)
+    seven_days_ago = now - timedelta(days=7)
+    fourteen_days_ago = now - timedelta(days=14)
+
+    bnz_data = {
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": fourteen_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.49
+            },
+            {
+                "scraped_at": seven_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.75
+            }
+        ]
+    }
+
+    (data_dir / "bnz_rates.json").write_text(json.dumps(bnz_data))
+
+    output_file = tmp_path / "index.html"
+    generate_html(data_dir, output_file)
+
+    html_content = output_file.read_text()
+
+    # Verify header contains (7d) indicator within the header <p> element
+    import re
+    expected_date = seven_days_ago.strftime("%Y-%m-%d")
+    header_match = re.search(r'class="last-updated">(.*?)</p>', html_content)
+    assert header_match is not None
+    header_text = header_match.group(1)
+    assert expected_date in header_text
+    assert "(7d)" in header_text
+    assert 'class="days-ago"' in header_text
+
+
 def test_generate_html_last_rate_change_no_changes(tmp_path):
     """Test scenario where rates array has no changes."""
     from datetime import datetime, timezone
@@ -1009,9 +1056,17 @@ def test_generate_html_last_rate_change_no_changes(tmp_path):
     assert "Last rate change:" in html_content
     assert ("No changes detected" in html_content or "N/A" in html_content)
 
+    # Verify no days-since indicator in the header when no changes
+    # The header paragraph should not contain a (Xd) pattern
+    import re
+    header_match = re.search(r'class="last-updated">(.*?)</p>', html_content)
+    assert header_match is not None
+    header_text = header_match.group(1)
+    assert re.search(r'\(\d+d\)', header_text) is None
+
 
 def test_get_most_recent_rate_change():
-    """Test helper function get_most_recent_rate_change."""
+    """Test helper function get_most_recent_rate_change returns tuple."""
     from datetime import datetime, timedelta, timezone
     from src.html_generator import get_most_recent_rate_change
 
@@ -1019,7 +1074,7 @@ def test_get_most_recent_rate_change():
     seven_days_ago = now - timedelta(days=7)
     fourteen_days_ago = now - timedelta(days=14)
 
-    # Test with multiple rates with changes
+    # Test with multiple rates with changes - returns tuple (date_str, days_since)
     rates = [
         {
             "scraped_at": fourteen_days_ago.isoformat(),
@@ -1032,7 +1087,9 @@ def test_get_most_recent_rate_change():
     ]
     result = get_most_recent_rate_change(rates)
     assert result is not None
-    assert seven_days_ago.strftime("%Y-%m-%d") in result
+    date_str, days_since = result
+    assert seven_days_ago.strftime("%Y-%m-%d") == date_str
+    assert days_since == 7
 
     # Test with all rates having no changes
     rates_no_change = [
@@ -1065,7 +1122,9 @@ def test_get_most_recent_rate_change():
     ]
     result = get_most_recent_rate_change(rates_mixed)
     assert result is not None
-    assert fourteen_days_ago.strftime("%Y-%m-%d") in result
+    date_str, days_since = result
+    assert fourteen_days_ago.strftime("%Y-%m-%d") == date_str
+    assert days_since == 14
 
 
 def test_generate_html_multiple_banks_global_last_change(tmp_path):
