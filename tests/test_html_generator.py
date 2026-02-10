@@ -1150,6 +1150,138 @@ def test_get_most_recent_rate_change_invalid_date_raises_error():
         get_most_recent_rate_change(rates)
 
 
+def test_extract_latest_rates_includes_days_since_update(tmp_path):
+    """Test that days_since_update is calculated from latest scraped_at date."""
+    from datetime import datetime, timedelta, timezone
+
+    now = datetime.now(timezone.utc)
+    ten_days_ago = now - timedelta(days=10)
+
+    data = {
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": ten_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.49
+            }
+        ]
+    }
+
+    file_path = tmp_path / "test_rates.json"
+    file_path.write_text(json.dumps(data))
+
+    latest = extract_latest_rates(file_path)
+
+    assert len(latest) == 1
+    rate = latest[0]
+    assert "days_since_update" in rate
+    assert rate["days_since_update"] == 10
+
+
+def test_extract_latest_rates_days_since_update_with_rate_change(tmp_path):
+    """Test that days_since_update uses latest entry date, not previous."""
+    from datetime import datetime, timedelta, timezone
+
+    now = datetime.now(timezone.utc)
+    twenty_days_ago = now - timedelta(days=20)
+    five_days_ago = now - timedelta(days=5)
+
+    data = {
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": twenty_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.49
+            },
+            {
+                "scraped_at": five_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.75
+            }
+        ]
+    }
+
+    file_path = tmp_path / "test_rates.json"
+    file_path.write_text(json.dumps(data))
+
+    latest = extract_latest_rates(file_path)
+
+    assert len(latest) == 1
+    rate = latest[0]
+    assert "days_since_update" in rate
+    assert rate["days_since_update"] == 5
+
+
+def test_extract_latest_rates_days_since_update_zero(tmp_path):
+    """Test that days_since_update is 0 when scraped today."""
+    from datetime import datetime, timezone
+
+    now = datetime.now(timezone.utc)
+
+    data = {
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": now.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.49
+            }
+        ]
+    }
+
+    file_path = tmp_path / "test_rates.json"
+    file_path.write_text(json.dumps(data))
+
+    latest = extract_latest_rates(file_path)
+
+    assert len(latest) == 1
+    rate = latest[0]
+    assert "days_since_update" in rate
+    assert rate["days_since_update"] == 0
+
+
+def test_generate_html_includes_days_since_update(tmp_path):
+    """Test that HTML renders days_since_update with (Xd) indicator and days-ago CSS class."""
+    from datetime import datetime, timedelta, timezone
+
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+
+    now = datetime.now(timezone.utc)
+    ten_days_ago = now - timedelta(days=10)
+
+    bnz_data = {
+        "bank_last_updated": now.isoformat(),
+        "rates": [
+            {
+                "scraped_at": ten_days_ago.isoformat(),
+                "product_name": "Standard",
+                "term": "1 year",
+                "rate_percentage": 4.49
+            }
+        ]
+    }
+
+    (data_dir / "bnz_rates.json").write_text(json.dumps(bnz_data))
+
+    output_file = tmp_path / "index.html"
+    generate_html(data_dir, output_file)
+
+    html_content = output_file.read_text()
+
+    # Verify (10d) indicator appears
+    assert "(10d)" in html_content
+
+    # Verify days-ago CSS class is used
+    assert "days-ago" in html_content
+
+
 def test_generate_html_content_invalid_date_raises_error(tmp_path):
     """Test that HTML generation fails loudly with malformed date instead of silently handling it."""
     from src.html_generator import generate_html_content
@@ -1165,7 +1297,8 @@ def test_generate_html_content_invalid_date_raises_error(tmp_path):
                     "rate_percentage": 4.49,
                     "rate_change": 0.00,
                     "is_recent_change": False,
-                    "is_new_product": False
+                    "is_new_product": False,
+                    "days_since_update": 0
                 }
             ]
         }

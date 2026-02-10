@@ -58,14 +58,15 @@ def extract_latest_rates(data_file: Path) -> list[dict]:
         else:
             rate_change = 0.00
 
+        # Calculate days since last update (always, for all rates)
+        scraped_date = datetime.fromisoformat(latest["scraped_at"])
+        now = datetime.now(scraped_date.tzinfo)
+        days_since_update = (now - scraped_date).days
+
         # Determine if this is a recent change (within last 2 weeks)
         is_recent_change = False
         if rate_change != 0.00:
-            # Parse scraped_at timestamp
-            scraped_date = datetime.fromisoformat(latest["scraped_at"])
-            now = datetime.now(scraped_date.tzinfo)  # Use same timezone
-            days_since_change = (now - scraped_date).days
-            is_recent_change = days_since_change <= 14
+            is_recent_change = days_since_update <= 14
 
         # Add rate_change and is_recent_change fields to latest entry
         enriched_rate = latest.copy()
@@ -73,6 +74,7 @@ def extract_latest_rates(data_file: Path) -> list[dict]:
         enriched_rate["is_recent_change"] = is_recent_change
         enriched_rate["is_new_product"] = is_new_product
         enriched_rate["days_since_first_appearance"] = days_since_first_appearance
+        enriched_rate["days_since_update"] = days_since_update
         result.append(enriched_rate)
 
     return result
@@ -258,6 +260,10 @@ def generate_html_content(bank_data: dict[str, dict], most_recent_change: str | 
             margin-left: 6px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }}
+        .days-ago {{
+            color: #718096;
+            font-size: 0.85em;
         }}
         .bank-dates {{
             margin-top: 15px;
@@ -465,7 +471,7 @@ def generate_html_content(bank_data: dict[str, dict], most_recent_change: str | 
                     <td>{product_display}</td>
                     <td>{rate['term']}</td>
                     <td class="rate">{rate['rate_percentage']:.2f}% <span class="{change_class}">({sign}{abs(rate_change):.2f})</span></td>
-                    <td>{scraped_date}</td>
+                    <td>{scraped_date} <span class="days-ago">({rate.get("days_since_update", "")}d)</span></td>
                 </tr>
 """
 

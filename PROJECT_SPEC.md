@@ -286,6 +286,10 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
   - Helps users quickly identify newly introduced loan products
   - Badge automatically disappears after 30 days
   - Can appear alongside recent change highlighting (yellow background + NEW badge)
+- **Days since update**: Each rate's "Last Updated" column shows how many days since the rate was last updated
+  - Format: `2026-02-03 (7d)` — date followed by days-ago indicator
+  - Styled with `.days-ago` CSS class (gray, smaller font)
+  - Always displayed for all rates, regardless of whether the rate changed
 - **Date information**:
   - **Top header**: Shows "Last rate change: YYYY-MM-DD" - the most recent date when any rate actually changed across all banks
   - **Below each table**: Shows timestamp per bank:
@@ -312,12 +316,13 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
 - [x] Recent change highlighting (2026-02-04): Rows with rate changes in last 14 days now highlighted with yellow background for quick identification of recent market movements
 - [x] New product indicator (2026-02-04): Products first appearing within 30 days show blue NEW badge for easy identification
 - [x] Python upgrade (2026-02-05): Upgraded from Python 3.13 to 3.14 for latest features and security patches
+- [x] Days since update indicator (2026-02-10): Added `(Xd)` indicator to "Last Updated" column showing days since each rate was last updated
 - [x] Error handling hardening (2026-02-05): Implemented fail-loudly error handling strategy:
   - GitHub Actions workflow guard prevents committing on scraper failure
   - Empty rates validation raises error instead of silent success
   - Removed bare except clauses - date parsing failures now propagate
   - JSON decode errors provide clear context messages
-  - 59 comprehensive tests ensure reliability
+  - 63 comprehensive tests ensure reliability
 
 ## Notes
 - User is experienced senior software engineer
