@@ -12,7 +12,8 @@ Automated daily scraping of New Zealand bank home loan rates with minimal mainte
 - **Zero maintenance** - auto-extracts API keys from bank websites
 - **Free hosting** - GitHub Pages serves static HTML visualization
 - **Extensible** - designed to easily add more banks
-- **Comprehensive tests** - 63 unit tests with TDD approach
+- **Push notifications** - optional ntfy.sh alerts when rates change
+- **Comprehensive tests** - 77 unit tests with TDD approach
 
 ## Current Banks
 
@@ -54,6 +55,7 @@ This modular design makes adding new banks straightforward and keeps bank-specif
 │   │   ├── parser.py            # Parse BNZ XML feed
 │   │   └── scraper.py           # BNZ scraping orchestration
 │   ├── scraper.py               # Main entry point
+│   ├── notifier.py              # ntfy.sh push notifications (bank-agnostic)
 │   ├── storage.py               # JSON file operations (bank-agnostic)
 │   └── html_generator.py        # Generate static HTML (bank-agnostic)
 ├── data/
@@ -64,6 +66,7 @@ This modular design makes adding new banks straightforward and keeps bank-specif
 │   ├── fixtures/                # Static test data
 │   ├── test_api_key_extractor.py
 │   ├── test_bnz_parser.py
+│   ├── test_notifier.py
 │   ├── test_storage.py
 │   └── test_html_generator.py
 ├── pyproject.toml               # Project config & dependencies
@@ -135,6 +138,17 @@ uv run python -m src.html_generator
 open docs/index.html
 ```
 
+### Push Notifications (Optional)
+
+Get notified on your phone when rates change via [ntfy.sh](https://ntfy.sh):
+
+1. Install the ntfy app on your phone and subscribe to a topic (e.g., `kiwi-rates-a7x9k2`)
+2. Set the `NTFY_TOPIC` environment variable:
+   - **Locally**: `NTFY_TOPIC=kiwi-rates-a7x9k2 uv run python -m src.scraper`
+   - **GitHub Actions**: Add as a repository variable at `Settings > Secrets and variables > Actions > Variables`
+
+Pick a non-guessable topic name — anyone who knows the topic can subscribe.
+
 ### Git Pre-Push Hook (Optional)
 
 To automatically run tests before every push, set up the pre-push hook:
@@ -200,7 +214,8 @@ You can manually trigger the scraper from the Actions tab:
    - Shows days since last update in "Last Updated" column: `2026-02-03 (7d)`
    - Top header shows most recent rate change date across all banks with days-ago indicator: `2026-02-03 (7d)`
    - Each bank table includes "Page generated" timestamp below the table
-8. **Commit & Push** (GitHub Actions) - Update repository
+8. **Notify** (`src/notifier.py`) - Send push notification via ntfy.sh if rates changed and `NTFY_TOPIC` is configured
+9. **Commit & Push** (GitHub Actions) - Update repository
 
 ### Retry Logic
 
@@ -212,7 +227,7 @@ You can manually trigger the scraper from the Actions tab:
 - **No API key storage** - Always extracts fresh key from website
 - **No browser automation** - Simple HTTP requests (fast, reliable)
 - **Stateful updates** - Only stores changes (clean data, less git noise)
-- **Comprehensive tests** - 63 tests ensure reliability
+- **Comprehensive tests** - 77 tests ensure reliability
 
 ## Adding More Banks
 

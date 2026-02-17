@@ -2,6 +2,7 @@
 from pathlib import Path
 
 from src.bnz import scrape_bnz_rates
+from src.notifier import notify_rate_changes
 
 
 def main():
@@ -17,6 +18,12 @@ def main():
         print(f"  Rates changed: {result['rates_changed']}")
         print(f"  Number of rates: {result['num_rates']}")
         print(f"  Scraped at: {result['scraped_at']}")
+        if result["rates_changed"]:
+            notify_rate_changes(
+                bank_name="BNZ",
+                changed_rates=result["changed_rates"],
+                existing_rates=result["existing_rates"],
+            )
     except Exception as e:
         print(f"✗ Scraping failed: {e}")
         raise

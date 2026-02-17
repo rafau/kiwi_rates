@@ -138,12 +138,14 @@ Mapping:
 │   │   ├── parser.py           # XML parsing (rates + last_updated)
 │   │   └── scraper.py          # BNZ scraping orchestration
 │   ├── scraper.py              # Main entry point (calls bank scrapers)
+│   ├── notifier.py             # ntfy.sh push notifications (bank-agnostic)
 │   ├── storage.py              # JSON file operations (bank-agnostic)
 │   └── html_generator.py       # Generate static HTML (bank-agnostic)
 ├── tests/
 │   ├── fixtures/               # Test fixtures (HTML/XML samples)
 │   ├── test_api_key_extractor.py
 │   ├── test_bnz_parser.py
+│   ├── test_notifier.py
 │   ├── test_storage.py
 │   └── test_html_generator.py
 ├── data/
@@ -173,6 +175,14 @@ Mapping:
 - **GitHub Pages**: Free
 - **Storage**: Free (git repository)
 - **Total**: $0/month
+
+### Notifications (ntfy.sh)
+- **Opt-in**: Set `NTFY_TOPIC` environment variable to enable push notifications on rate changes
+- **Service**: Uses public ntfy.sh instance (no auth required, topic name acts as implicit password)
+- **Trigger**: Sends notification only when rates actually change
+- **Failure handling**: Notification errors print a warning but never break the scraping pipeline
+- **GitHub Actions**: Set `NTFY_TOPIC` as a repository variable (`Settings > Secrets and variables > Actions > Variables`)
+- **Local**: `NTFY_TOPIC=my-kiwi-rates uv run python -m src.scraper`
 
 ## Future Extensions
 - Add other NZ banks (ANZ, Westpac, ASB, Kiwibank)
@@ -245,7 +255,7 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
 - **GitHub Actions cron**: `0 10 * * *` (10:00 UTC = 11:00 PM NZDT in summer, 10:00 PM NZST in winter - may need adjustment)
 
 ### Error Handling Strategy
-- **Fail loudly**: All errors raise exceptions (no silent failures)
+- **Fail loudly**: All errors raise exceptions (no silent failures), with one intentional exception: the notification module (`notifier.py`) catches all errors and prints warnings, because notification failure must not break the scraping pipeline
 - **Validation**: Empty results treated as errors (BNZ parser raises ValueError if no rates found)
 - **Retry logic**: Network failures retry 5 times with exponential backoff
 - **Workflow guards**: GitHub Actions won't commit on scraper failure (`if: success()` condition)
@@ -317,12 +327,13 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
 - [x] New product indicator (2026-02-04): Products first appearing within 30 days show blue NEW badge for easy identification
 - [x] Python upgrade (2026-02-05): Upgraded from Python 3.13 to 3.14 for latest features and security patches
 - [x] Days since update indicator (2026-02-10): Added `(Xd)` indicator to "Last Updated" column showing days since each rate was last updated, and to the top "Last rate change" header
+- [x] Push notifications (2026-02-17): ntfy.sh notifications on rate changes via `NTFY_TOPIC` env var (opt-in, silent no-op when unconfigured)
 - [x] Error handling hardening (2026-02-05): Implemented fail-loudly error handling strategy:
   - GitHub Actions workflow guard prevents committing on scraper failure
   - Empty rates validation raises error instead of silent success
   - Removed bare except clauses - date parsing failures now propagate
   - JSON decode errors provide clear context messages
-  - 63 comprehensive tests ensure reliability
+  - 77 comprehensive tests ensure reliability
 
 ## Notes
 - User is experienced senior software engineer

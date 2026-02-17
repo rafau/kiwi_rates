@@ -130,5 +130,7 @@ def scrape_bnz_rates(data_file: Path) -> dict:
         "success": True,
         "rates_changed": rates_changed,
         "num_rates": len(new_rates),
-        "scraped_at": now_iso
+        "scraped_at": now_iso,
+        "changed_rates": changed_rates if rates_changed else [],
+        "existing_rates": existing_data["rates"] if rates_changed else [],
     }
