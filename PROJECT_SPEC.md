@@ -138,6 +138,7 @@ Mapping:
 │   │   ├── parser.py           # XML parsing (rates + last_updated)
 │   │   └── scraper.py          # BNZ scraping orchestration
 │   ├── scraper.py              # Main entry point (calls bank scrapers)
+│   ├── http.py                 # Shared HTTP utilities (fetch with retry)
 │   ├── notifier.py             # ntfy.sh push notifications (bank-agnostic)
 │   ├── storage.py              # JSON file operations (bank-agnostic)
 │   └── html_generator.py       # Generate static HTML (bank-agnostic)
@@ -145,6 +146,7 @@ Mapping:
 │   ├── fixtures/               # Test fixtures (HTML/XML samples)
 │   ├── test_api_key_extractor.py
 │   ├── test_bnz_parser.py
+│   ├── test_http.py
 │   ├── test_notifier.py
 │   ├── test_storage.py
 │   └── test_html_generator.py
@@ -202,6 +204,7 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
 4. **`scraper.py`**: Orchestrates the scraping process (fetch → parse → store)
 
 **Shared utilities:**
+- `src/http.py`: HTTP fetch with retry logic and exponential backoff
 - `src/storage.py`: JSON file operations (load/save/compare rates)
 - `src/html_generator.py`: Generates HTML from all bank data files
 - `src/scraper.py`: Main entry point that calls individual bank scrapers
@@ -317,7 +320,7 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
 - [x] Core scraper implementation (BNZ module with extractor, parser, scraper)
 - [x] GitHub Actions workflow (configured for daily runs)
 - [x] HTML generator (reads all bank files, generates static HTML)
-- [x] Testing and validation (42 tests, all passing)
+- [x] Testing and validation (83 tests, all passing)
 - [x] Code organization (bank-specific modules for easy extension)
 - [x] Initial deployment (git repository initialized and pushed to GitHub)
 - [x] First production run (successfully scraped BNZ rates on 2025-12-22)
@@ -333,7 +336,7 @@ Each bank-specific module (e.g., `src/bnz/`) contains:
   - Empty rates validation raises error instead of silent success
   - Removed bare except clauses - date parsing failures now propagate
   - JSON decode errors provide clear context messages
-  - 77 comprehensive tests ensure reliability
+  - 83 comprehensive tests ensure reliability
 
 ## Notes
 - User is experienced senior software engineer

@@ -128,10 +128,6 @@ def generate_html(data_dir: Path, output_file: Path) -> None:
         # Extract bank name from filename (e.g., "bnz_rates.json" -> "BNZ")
         bank_name = rate_file.stem.replace("_rates", "").upper()
 
-        # Load full JSON to get metadata
-        with open(rate_file) as f:
-            data = json.load(f)
-
         latest_rates = extract_latest_rates(rate_file)
 
         if latest_rates:

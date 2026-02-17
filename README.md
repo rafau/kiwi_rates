@@ -13,7 +13,7 @@ Automated daily scraping of New Zealand bank home loan rates with minimal mainte
 - **Free hosting** - GitHub Pages serves static HTML visualization
 - **Extensible** - designed to easily add more banks
 - **Push notifications** - optional ntfy.sh alerts when rates change
-- **Comprehensive tests** - 77 unit tests with TDD approach
+- **Comprehensive tests** - 83 unit tests with TDD approach
 
 ## Current Banks
 
@@ -29,6 +29,7 @@ Each bank is implemented as a separate module (`src/bnz/`, `src/anz/`, etc.) con
 - **`__init__.py`** - Export the main scraper function
 
 **Shared utilities:**
+- `http.py` - HTTP fetch with retry logic and exponential backoff
 - `storage.py` - JSON file operations (works with all banks)
 - `html_generator.py` - Generates visualization from all bank data files
 
@@ -55,6 +56,7 @@ This modular design makes adding new banks straightforward and keeps bank-specif
 │   │   ├── parser.py            # Parse BNZ XML feed
 │   │   └── scraper.py           # BNZ scraping orchestration
 │   ├── scraper.py               # Main entry point
+│   ├── http.py                  # Shared HTTP utilities (fetch with retry)
 │   ├── notifier.py              # ntfy.sh push notifications (bank-agnostic)
 │   ├── storage.py               # JSON file operations (bank-agnostic)
 │   └── html_generator.py        # Generate static HTML (bank-agnostic)
@@ -66,6 +68,7 @@ This modular design makes adding new banks straightforward and keeps bank-specif
 │   ├── fixtures/                # Static test data
 │   ├── test_api_key_extractor.py
 │   ├── test_bnz_parser.py
+│   ├── test_http.py
 │   ├── test_notifier.py
 │   ├── test_storage.py
 │   └── test_html_generator.py
@@ -227,7 +230,7 @@ You can manually trigger the scraper from the Actions tab:
 - **No API key storage** - Always extracts fresh key from website
 - **No browser automation** - Simple HTTP requests (fast, reliable)
 - **Stateful updates** - Only stores changes (clean data, less git noise)
-- **Comprehensive tests** - 77 tests ensure reliability
+- **Comprehensive tests** - 83 tests ensure reliability
 
 ## Adding More Banks
 

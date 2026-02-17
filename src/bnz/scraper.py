@@ -1,48 +1,12 @@
 """BNZ rates scraper."""
-import time
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-import requests
-
 from src.bnz.extractor import extract_api_key
 from src.bnz.parser import parse_last_updated, parse_rates
+from src.http import fetch_with_retry
 from src.storage import load_rates, save_rates, should_update_rates, filter_changed_rates
-
-
-def fetch_with_retry(url: str, headers: dict | None = None, max_retries: int = 5, backoff: float = 2.0, timeout: int = 60) -> requests.Response:
-    """
-    Fetch URL with retry logic and exponential backoff.
-
-    Args:
-        url: URL to fetch
-        headers: Optional headers dictionary
-        max_retries: Maximum number of retry attempts (default: 5)
-        backoff: Initial backoff time in seconds (doubles each retry, default: 2.0)
-        timeout: Request timeout in seconds (default: 60)
-
-    Returns:
-        Response object
-
-    Raises:
-        requests.RequestException: If all retries fail
-    """
-    last_exception = None
-
-    for attempt in range(max_retries):
-        try:
-            response = requests.get(url, headers=headers, timeout=timeout)
-            response.raise_for_status()
-            return response
-        except requests.RequestException as e:
-            last_exception = e
-            if attempt < max_retries - 1:
-                sleep_time = backoff * (2 ** attempt)
-                print(f"Request failed (attempt {attempt + 1}/{max_retries}), retrying in {sleep_time}s...")
-                time.sleep(sleep_time)
-
-    raise last_exception
 
 
 def scrape_bnz_rates(data_file: Path) -> dict:
