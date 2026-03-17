@@ -1,5 +1,5 @@
 {
-  "bank_last_updated": "2026-02-26T00:00:00+13:00",
+  "bank_last_updated": "2026-03-18T00:00:00+13:00",
   "rates": [
     {
       "product_name": "TotalMoney",
@@ -108,6 +108,36 @@
       "term": "5 years",
       "rate_percentage": 5.29,
       "scraped_at": "2026-02-26T23:55:30.630029+13:00"
+    },
+    {
+      "product_name": "Standard",
+      "term": "18 months",
+      "rate_percentage": 4.69,
+      "scraped_at": "2026-03-18T12:03:11.202513+13:00"
+    },
+    {
+      "product_name": "Standard",
+      "term": "2 years",
+      "rate_percentage": 4.89,
+      "scraped_at": "2026-03-18T12:03:11.202513+13:00"
+    },
+    {
+      "product_name": "Standard",
+      "term": "3 years",
+      "rate_percentage": 5.29,
+      "scraped_at": "2026-03-18T12:03:11.202513+13:00"
+    },
+    {
+      "product_name": "Standard",
+      "term": "4 years",
+      "rate_percentage": 5.49,
+      "scraped_at": "2026-03-18T12:03:11.202513+13:00"
+    },
+    {
+      "product_name": "Standard",
+      "term": "5 years",
+      "rate_percentage": 5.69,
+      "scraped_at": "2026-03-18T12:03:11.202513+13:00"
     }
   ]
 }
