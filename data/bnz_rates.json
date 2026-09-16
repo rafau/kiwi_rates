@@ -1,5 +1,5 @@
 {
-  "bank_last_updated": "2026-08-05T00:00:00+12:00",
+  "bank_last_updated": "2026-09-17T00:00:00+12:00",
   "rates": [
     {
       "product_name": "TotalMoney",
@@ -306,6 +306,36 @@
       "term": "4 years",
       "rate_percentage": 5.45,
       "scraped_at": "2026-08-05T00:06:59.412956+12:00"
+    },
+    {
+      "product_name": "TotalMoney",
+      "term": "Variable",
+      "rate_percentage": 6.44,
+      "scraped_at": "2026-09-17T02:46:45.040164+12:00"
+    },
+    {
+      "product_name": "BNZ Advantage",
+      "term": "Variable",
+      "rate_percentage": 6.34,
+      "scraped_at": "2026-09-17T02:46:45.040164+12:00"
+    },
+    {
+      "product_name": "Standard",
+      "term": "Variable",
+      "rate_percentage": 6.34,
+      "scraped_at": "2026-09-17T02:46:45.040164+12:00"
+    },
+    {
+      "product_name": "Mortgage One",
+      "term": "Variable",
+      "rate_percentage": 6.44,
+      "scraped_at": "2026-09-17T02:46:45.040164+12:00"
+    },
+    {
+      "product_name": "Rapid Repay",
+      "term": "Variable",
+      "rate_percentage": 6.44,
+      "scraped_at": "2026-09-17T02:46:45.040164+12:00"
     }
   ]
 }
