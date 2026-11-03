@@ -1,5 +1,5 @@
 {
-  "bank_last_updated": "2026-09-22T00:00:00+12:00",
+  "bank_last_updated": "2026-11-04T00:00:00+13:00",
   "rates": [
     {
       "product_name": "TotalMoney",
@@ -372,6 +372,18 @@
       "term": "5 years",
       "rate_percentage": 5.75,
       "scraped_at": "2026-09-22T04:22:53.872973+12:00"
+    },
+    {
+      "product_name": "Standard",
+      "term": "6 months",
+      "rate_percentage": 4.79,
+      "scraped_at": "2026-11-04T06:40:35.061690+13:00"
+    },
+    {
+      "product_name": "Standard",
+      "term": "1 year",
+      "rate_percentage": 4.99,
+      "scraped_at": "2026-11-04T06:40:35.061690+13:00"
     }
   ]
 }
